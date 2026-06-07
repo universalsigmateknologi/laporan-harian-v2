@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'master',
     'siswa',
     'utils',
+    'perencanaan',
 ]
 
 MIDDLEWARE = [
