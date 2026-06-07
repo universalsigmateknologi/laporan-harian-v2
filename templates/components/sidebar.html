@@ -1,0 +1,45 @@
+{% load static %}
+<style>
+.sidebar-link.active { background: rgba(255,255,255,0.08); color: #fff; }
+.sidebar-link:not(.active):hover { background: rgba(255,255,255,0.04); }
+</style>
+
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden transition-opacity duration-300" onclick="toggleSidebar()"></div>
+
+<aside id="sidebar" class="fixed top-0 left-0 z-50 h-full w-64 bg-navy-900 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+  <div class="flex items-center gap-3 px-5 h-16 border-b border-white/10 shrink-0">
+    <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center overflow-hidden p-1">
+      <img src="{% static 'images/medeska.jpeg' %}" alt="Logo" class="w-full h-full object-contain" />
+    </div>
+    <div class="min-w-0">
+      <p class="text-white text-sm font-semibold leading-tight truncsate">MEDESKA</p>
+      <p class="text-navy-400 text-[11px] leading-tight truncate">SMK Nurul Jadid</p>
+    </div>
+  </div>
+  <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+    <p class="text-navy-500 text-[11px] font-semibold uppercase tracking-wider px-3 mb-2">Menu Utama</p>
+    <a href="{% url 'laporan:rekap_harian' %}" class="sidebar-link {% if active_menu == 'rekap_harian' %}active{% else %}text-navy-300{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150">
+      <i data-lucide="file-text" class="w-[18px] h-[18px]"></i>
+      Rekap Laporan
+    </a>
+  </nav>
+  <div class="shrink-0 px-4 py-4 border-t border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-navy-600 flex items-center justify-center text-white text-xs font-semibold">{{ user_initials|default:"AD" }}</div>
+      <div class="min-w-0 flex-1">
+        <p class="text-white text-sm font-medium truncate">{{ user.username }}</p>
+        <p class="text-navy-400 text-[11px] truncate">{{ user.email }}</p>
+      </div>
+      <a href="{% url 'logout' %}" class="text-navy-400 hover:text-white transition-colors" title="Keluar">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    document.getElementById('sidebarOverlay').classList.toggle('hidden');
+  }
+</script>

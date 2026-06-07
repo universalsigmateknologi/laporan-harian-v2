@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Rekap Harian Kegiatan MEDESKA</title>
+  <style>
+    body { font-family: sans-serif; font-size: 11px; color: #1e3355; }
+    h1 { font-size: 16px; margin-bottom: 4px; }
+    .meta { color: #637fb5; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #dce3f0; padding: 6px 8px; vertical-align: top; }
+    th { background: #f0f3f9; text-align: left; font-size: 10px; text-transform: uppercase; }
+    .no { width: 24px; }
+    .qr-cell { width: 82px; }
+    .qr-cell img { display: block; width: 72px; height: 72px; object-fit: contain; }
+    .qr-note { font-size: 9px; color: #637fb5; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Rekap Harian Kegiatan MEDESKA</h1>
+  <p class="meta">SMK Nurul Jadid{% if tahun_ajaran_nama %} — {{ tahun_ajaran_nama }}{% endif %} · {{ total }} entri</p>
+  <table>
+    <thead>
+      <tr>
+        <th class="no">No</th>
+        <th>Nama</th>
+        <th>Jurusan</th>
+        <th>Uraian</th>
+        <th>Hasil</th>
+        <th>Status</th>
+        <th>Tanggal</th>
+        <th class="qr-cell">QR Code</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.no }}</td>
+        <td>{{ row.nama }}</td>
+        <td>{{ row.jurusan }}</td>
+        <td>{{ row.uraian }}</td>
+        <td>{{ row.hasil }}</td>
+        <td>{{ row.status }}</td>
+        <td>{{ row.tanggal }}</td>
+        <td class="qr-cell"><img src="{{ row.qr_code }}" alt="QR Code detail laporan"></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8">Tidak ada data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

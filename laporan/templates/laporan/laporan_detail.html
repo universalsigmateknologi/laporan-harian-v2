@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% load laporan_extras static %}
+
+{% block title %}Detail Laporan — {{ laporan.siswa.nama_lengkap }} — MEDESKA{% endblock %}
+
+{% block extra_css %}
+<style>
+.photo-card { transition: transform 200ms ease, box-shadow 200ms ease; }
+.photo-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.12); }
+.photo-card img { transition: transform 300ms ease; }
+.photo-card:hover img { transform: scale(1.05); }
+.slideshow-overlay { animation: modalIn 200ms ease-out; }
+@keyframes modalIn { from { opacity: 0; } to { opacity: 1; } }
+.slideshow-img { animation: imgIn 250ms ease-out; }
+@keyframes imgIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.slide-nav:hover { background-color: rgba(255,255,255,0.2); }
+.slide-dot { transition: all 150ms ease; }
+.slide-dot.active { background: #fff; width: 24px; border-radius: 6px; }
+.info-grid-item { transition: background-color 150ms ease; }
+.info-grid-item:hover { background-color: #f0f3f9; }
+</style>
+{% endblock %}
+
+{% block topbar %}
+<header class="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100 flex items-center justify-between px-4 lg:px-6 shrink-0">
+  <div class="flex items-center gap-3">
+    <button type="button" onclick="toggleSidebar()" class="lg:hidden w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
+      <i data-lucide="menu" class="w-5 h-5 text-navy-700"></i>
+    </button>
+    <a href="{{ back_url }}" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors group" title="Kembali ke daftar">
+      <i data-lucide="arrow-left" class="w-4 h-4 text-navy-600 group-hover:-translate-x-0.5 transition-transform duration-150"></i>
+    </a>
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-base font-semibold text-navy-900 leading-tight">Detail Laporan</h1>
+        <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium {{ laporan.siswa.jurusan.kode|jurusan_badge_class }}">{{ laporan.siswa.jurusan.kode }}</span>
+      </div>
+      <p class="text-[12px] text-navy-400 leading-tight">{{ tanggal_label }} — MEDESKA</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <button type="button" onclick="window.print()" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors" title="Cetak">
+      <i data-lucide="printer" class="w-4 h-4 text-navy-600"></i>
+    </button>
+    <div class="relative">
+      <button type="button" onclick="toggleDropdown('detailExportDropdown')" class="flex items-center gap-2 bg-navy-800 hover:bg-navy-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150">
+        <i data-lucide="download" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Export</span>
+        <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-60"></i>
+      </button>
+      <div id="detailExportDropdown" class="hidden absolute top-full right-0 mt-2 w-52 bg-white rounded-xl border border-navy-200 shadow-xl py-2 z-20">
+        <p class="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-navy-400">Format Export</p>
+        <a href="{% url 'laporan:export_pdf' %}?{{ export_query }}" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-navy-700 hover:bg-navy-50 transition-colors">
+          <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+            <i data-lucide="file-text" class="w-4 h-4 text-red-600"></i>
+          </div>
+          <div class="text-left">
+            <p class="font-medium text-[13px]">Export PDF</p>
+            <p class="text-[11px] text-navy-400">Laporan ini saja</p>
+          </div>
+        </a>
+        <a href="{% url 'laporan:export_excel' %}?{{ export_query }}" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-navy-700 hover:bg-navy-50 transition-colors">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+            <i data-lucide="table" class="w-4 h-4 text-emerald-600"></i>
+          </div>
+          <div class="text-left">
+            <p class="font-medium text-[13px]">Export Excel</p>
+            <p class="text-[11px] text-navy-400">Laporan ini saja</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="max-w-4xl mx-auto mb-4 space-y-2">
+  {% for message in messages %}
+  <div class="px-4 py-3 rounded-xl text-sm {% if message.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-100{% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-100{% else %}bg-navy-50 text-navy-800 border border-navy-100{% endif %}">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="max-w-4xl mx-auto space-y-6">
+  <div class="bg-white rounded-2xl border border-navy-100 overflow-hidden">
+    <div class="h-1.5 bg-gradient-to-r from-navy-600 via-navy-400 to-violet-400"></div>
+    <div class="p-5 lg:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-5">
+        <div class="shrink-0">
+          <div class="w-16 h-16 rounded-2xl bg-navy-100 flex items-center justify-center text-navy-600 text-xl font-semibold">{{ laporan.siswa.nama_lengkap|initials }}</div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="text-xl font-semibold text-navy-900 leading-tight">{{ laporan.siswa.nama_lengkap }}</h2>
+          <p class="text-sm text-navy-400 mt-1">SMK Nurul Jadid Paiton Probolinggo · NIS {{ laporan.siswa.nis }}</p>
+          <div class="flex flex-wrap items-center gap-2 mt-3">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium {{ laporan.siswa.jurusan.kode|jurusan_badge_class }}">
+              <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+              {{ laporan.siswa.jurusan.kode }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy-50 text-navy-600 text-[12px] font-medium">
+              <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+              {{ tanggal_label }}
+            </span>
+            {% if laporan.status == 'Selesai' %}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[12px] font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Selesai
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[12px] font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Dalam Proses
+            </span>
+            {% endif %}
+          </div>
+          {% if laporan.siswa.pembimbing %}
+          <p class="text-[12px] text-navy-400 mt-2">
+            Pembimbing: <span class="text-navy-600">{{ laporan.siswa.pembimbing.nama_lengkap }}</span>
+          </p>
+          {% endif %}
+        </div>
+        <div class="shrink-0 flex items-center gap-2">
+          {% if user.is_admin %}            
+          <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="verifikasi">
+            <button type="submit" {% if laporan.status == 'Selesai' %}disabled{% endif %} class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">Verifikasi</span>
+            </button>
+          </form>
+          <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="revisi">
+            <button type="submit" {% if laporan.status == 'Dalam Proses' %}disabled{% endif %} class="flex items-center gap-2 px-4 py-2 bg-white border border-navy-200 hover:bg-navy-50 text-navy-700 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">Revisi</span>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div class="info-grid-item bg-white rounded-xl border border-navy-100 p-4">
+      <div class="flex items-center gap-2.5 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+          <i data-lucide="clipboard-list" class="w-4 h-4 text-blue-600"></i>
+        </div>
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-navy-400">Uraian Pekerjaan</p>
+      </div>
+      <p class="text-sm text-navy-700 leading-relaxed whitespace-pre-line">{{ laporan.uraian_pekerjaan }}</p>
+    </div>
+    <div class="info-grid-item bg-white rounded-xl border border-navy-100 p-4">
+      <div class="flex items-center gap-2.5 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+          <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
+        </div>
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-navy-400">Hasil / Progress</p>
+      </div>
+      <p class="text-sm text-navy-700 leading-relaxed whitespace-pre-line">{{ laporan.hasil_progress }}</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-navy-100 p-5 lg:p-6">
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+          <i data-lucide="image" class="w-4 h-4 text-violet-600"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-navy-900">Foto Bukti Kegiatan</h3>
+          <p class="text-[11px] text-navy-400">{{ fotos|length }} foto terlampir</p>
+        </div>
+      </div>
+      {% if fotos %}
+      <button type="button" onclick="openSlideshow(0)" class="flex items-center gap-1.5 text-[12px] text-navy-500 hover:text-navy-700 font-medium transition-colors">
+        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+        Lihat semua
+      </button>
+      {% endif %}
+    </div>
+
+    {% if fotos %}
+    {{ foto_urls|json_script:"detail-photos-data" }}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="photoGrid">
+      {% for foto in fotos %}
+      <div class="photo-card rounded-xl overflow-hidden border border-navy-100 cursor-pointer aspect-square" onclick="openSlideshow({{ forloop.counter0 }})">
+        <div class="relative h-full">
+          <img src="{{ foto.foto.url }}" alt="{{ foto.keterangan|default:'Bukti kegiatan' }}" class="w-full h-full object-cover">
+          {% if foto.keterangan %}
+          <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-end p-2.5">
+            <span class="text-white text-[11px] font-medium">{{ foto.keterangan }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="py-10 text-center rounded-xl border border-dashed border-navy-200 bg-navy-50/50">
+      <i data-lucide="image-off" class="w-8 h-8 text-navy-300 mx-auto mb-2"></i>
+      <p class="text-sm text-navy-500">Belum ada foto bukti diunggah</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="flex items-center justify-between pb-6">
+    {% if prev_laporan %}
+    <a href="{% url 'laporan:detail' prev_laporan.pk %}{% if nav_qs %}?{{ nav_qs }}{% endif %}" class="flex items-center gap-2 text-sm text-navy-500 hover:text-navy-800 transition-colors group">
+      <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-150"></i>
+      <div class="text-left">
+        <p class="text-[11px] text-navy-400">Sebelumnya</p>
+        <p class="font-medium text-[13px]">{{ prev_laporan.siswa.nama_lengkap }}</p>
+      </div>
+    </a>
+    {% else %}
+    <div class="flex items-center gap-2 text-sm text-navy-300">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <div class="text-left">
+        <p class="text-[11px]">Sebelumnya</p>
+        <p class="font-medium text-[13px]">Tidak ada</p>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if next_laporan %}
+    <a href="{% url 'laporan:detail' next_laporan.pk %}{% if nav_qs %}?{{ nav_qs }}{% endif %}" class="flex items-center gap-2 text-sm text-navy-500 hover:text-navy-800 transition-colors group text-right">
+      <div>
+        <p class="text-[11px] text-navy-400">Berikutnya</p>
+        <p class="font-medium text-[13px]">{{ next_laporan.siswa.nama_lengkap }}</p>
+      </div>
+      <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150"></i>
+    </a>
+    {% else %}
+    <div class="flex items-center gap-2 text-sm text-navy-300 text-right">
+      <div>
+        <p class="text-[11px]">Berikutnya</p>
+        <p class="font-medium text-[13px]">Tidak ada</p>
+      </div>
+      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block modal %}
+{% if fotos %}
+<div id="slideshowOverlay" class="slideshow-overlay fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm hidden items-center justify-center" onclick="handleOverlayClick(event)">
+  <button type="button" onclick="closeSlideshow()" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors" aria-label="Tutup">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div class="absolute top-4 left-4 z-10 bg-white/10 backdrop-blur-md rounded-lg px-3 py-2">
+    <p class="text-white text-sm font-medium">{{ laporan.siswa.nama_lengkap }}</p>
+    <p class="text-white/60 text-[11px]">{{ laporan.siswa.jurusan.kode }} · {{ laporan.tanggal|date:"d M Y" }}</p>
+  </div>
+  <div class="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/10 backdrop-blur-md rounded-full px-3 py-1.5">
+    <p id="slideCounter" class="text-white text-[12px] font-medium"></p>
+  </div>
+  <button type="button" onclick="slideNav(-1)" id="slidePrevBtn" class="slide-nav absolute left-3 lg:left-6 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/10 flex items-center justify-center transition-colors">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <div class="flex items-center justify-center w-full h-full px-16 lg:px-24 py-20">
+    <img id="slideImage" src="" alt="Preview" class="slideshow-img max-w-full max-h-full object-contain rounded-xl shadow-2xl select-none">
+  </div>
+  <button type="button" onclick="slideNav(1)" id="slideNextBtn" class="slide-nav absolute right-3 lg:right-6 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/10 flex items-center justify-center transition-colors">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+  <div id="slideDots" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5"></div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleDropdown(id) {
+    document.querySelectorAll('[id$="Dropdown"]').forEach(d => {
+      if (d.id !== id) d.classList.add('hidden');
+    });
+    document.getElementById(id).classList.toggle('hidden');
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.relative')) {
+      document.querySelectorAll('[id$="Dropdown"]').forEach(d => d.classList.add('hidden'));
+    }
+  });
+
+  const photosEl = document.getElementById('detail-photos-data');
+  const allSlideImages = photosEl ? JSON.parse(photosEl.textContent) : [];
+  const slideLabels = [
+    {% for foto in fotos %}
+    "{{ foto.keterangan|default:'Bukti kegiatan'|escapejs }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+  let slideIndex = 0;
+
+  function openSlideshow(index) {
+    if (!allSlideImages.length) return;
+    slideIndex = index;
+    const overlay = document.getElementById('slideshowOverlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    renderSlide();
+  }
+
+  function closeSlideshow() {
+    const overlay = document.getElementById('slideshowOverlay');
+    if (!overlay) return;
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  function slideNav(dir) {
+    slideIndex = (slideIndex + dir + allSlideImages.length) % allSlideImages.length;
+    renderSlide();
+  }
+
+  function goToSlide(i) { slideIndex = i; renderSlide(); }
+
+  function renderSlide() {
+    const img = document.getElementById('slideImage');
+    img.classList.remove('slideshow-img');
+    void img.offsetWidth;
+    img.src = allSlideImages[slideIndex];
+    img.alt = slideLabels[slideIndex] || 'Bukti kegiatan';
+    img.classList.add('slideshow-img');
+    document.getElementById('slideCounter').textContent = `${slideIndex + 1} / ${allSlideImages.length}`;
+    const dots = document.getElementById('slideDots');
+    dots.innerHTML = '';
+    allSlideImages.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = `slide-dot w-2 h-2 rounded-full bg-white/40 ${i === slideIndex ? 'active' : ''}`;
+      dot.onclick = (e) => { e.stopPropagation(); goToSlide(i); };
+      dots.appendChild(dot);
+    });
+    const disabled = allSlideImages.length <= 1;
+    document.getElementById('slidePrevBtn').disabled = disabled;
+    document.getElementById('slideNextBtn').disabled = disabled;
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target.id === 'slideshowOverlay') closeSlideshow();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const overlay = document.getElementById('slideshowOverlay');
+    if (!overlay || overlay.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeSlideshow();
+    if (e.key === 'ArrowLeft') slideNav(-1);
+    if (e.key === 'ArrowRight') slideNav(1);
+  });
+</script>
+{% endblock %}

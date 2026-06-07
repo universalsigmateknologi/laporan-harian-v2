@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MEDESKA{% endblock %}</title>
+    <link relDocument="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <style>
+        * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        ::selection { background: #3d5a8a; color: #ffffff; }
+    </style>
+    {% block extra_css %}
+        
+    {% endblock extra_css %}
+</head>
+<body class="font-sans bg-navy-50 text-navy-900 min-h-screen">
+    <!-- Sidebar -->
+     {% include 'components/sidebar.html' %}
+
+    <!-- Main Wrapper -->
+    <div class="lg:ml-64 min-h-screen flex flex-col">
+        <!-- Topbar -->
+         {% block topbar %}
+            
+         {% endblock topbar %}
+
+        <!-- Mobile Search Bar -->
+         {% block searchbar %}
+            
+         {% endblock searchbar %}
+
+        <!-- Content -->
+        <main class="flex-1 p-4 lg:p-6">
+            {% block content %}
+                
+            {% endblock content %}
+        </main>
+    </div>
+    <!-- ============== MODAL ============== -->
+     {% block modal %}
+        
+     {% endblock modal %}
+     {% block extra_js %}{% endblock extra_js %}
+     <script>
+       document.addEventListener('DOMContentLoaded', function () {
+         if (typeof lucide !== 'undefined') lucide.createIcons();
+       });
+     </script>
+</body>
+</html>

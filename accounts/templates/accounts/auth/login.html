@@ -1,0 +1,363 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="{% static 'css/output.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Smooth transisi untuk semua elemen interaktif */
+    input, button, a, label {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Hilangkan outline default dan ganti dengan custom */
+    input:focus {
+      outline: none;
+    }
+
+    /* Animasi label mengambang */
+    .input-group input:focus ~ label,
+    .input-group input:not(:placeholder-shown) ~ label {
+      transform: translateY(-1.65rem) scale(0.82);
+      color: #3d5a8a;
+      background: white;
+      padding: 0 0.35rem;
+      left: 0.75rem;
+    }
+
+    .input-group label {
+      transform: translateY(-50%);
+      top: 50%;
+      left: 0.85rem;
+      transform-origin: left;
+      pointer-events: none;
+      color: #8da3cc;
+    }
+
+    /* Garis bawah animasi */
+    .input-line {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: #3d5a8a;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 2px;
+    }
+
+    .input-group input:focus ~ .input-line {
+      left: 0;
+      width: 100%;
+    }
+
+    /* Tombol ripple effect */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.35);
+      transform: scale(0);
+      animation: rippleAnim 0.6s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes rippleAnim {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* Checkbox custom */
+    .custom-checkbox {
+      appearance: none;
+      width: 1rem;
+      height: 1rem;
+      border: 1.5px solid #b8c7e1;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .custom-checkbox:checked {
+      background: #1e3355;
+      border-color: #1e3355;
+    }
+
+    .custom-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 3.5px;
+      width: 5px;
+      height: 9px;
+      border: solid white;
+      border-width: 0 1.5px 1.5px 0;
+      transform: rotate(45deg);
+      animation: checkPop 0.2s ease;
+    }
+
+    @keyframes checkPop {
+      0% { transform: rotate(45deg) scale(0); }
+      60% { transform: rotate(45deg) scale(1.2); }
+      100% { transform: rotate(45deg) scale(1); }
+    }
+
+    /* Subtle background pattern */
+    .bg-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(30, 51, 85, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(61, 90, 138, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(141, 163, 204, 0.02) 0%, transparent 70%);
+    }
+
+    /* Toast notification */
+    .toast {
+      transform: translateY(1.5rem);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Loading spinner di tombol */
+    .spinner {
+      display: inline-block;
+      width: 1.1rem;
+      height: 1.1rem;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-pattern min-h-screen flex items-center justify-center font-sans p-4">
+
+  <!-- Container utama -->
+  <div class="w-full max-w-md">
+
+    <!-- Card login -->
+    <div id="loginCard" class="bg-white rounded-2xl shadow-[0_4px_40px_rgba(13,26,45,0.08)] p-8 sm:p-10">
+
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <!-- Logo / ikon -->
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-navy-800 mb-4 shadow-lg shadow-navy-800/20 overflow-hidden">
+          <img src="{% static 'images/smknj.jpeg' %}" alt="Logo" class="w-full h-full object-contain" />
+        </div>
+        <h1 class="text-2xl font-bold text-navy-900 tracking-tight">Selamat Datang</h1>
+        <p class="text-navy-400 text-sm mt-1.5">Masuk ke akun Anda untuk melanjutkan</p>
+      </div>
+
+      <!-- Form -->
+      <form id="loginForm" class="space-y-5" method="POST">
+        {% csrf_token %}
+        <!-- Input email -->
+        <div class="input-group relative">
+          <input
+            type="text"
+            id="email"
+            placeholder=" "
+            name="username"
+            class="w-full h-12 px-3 pt-1 pb-0.5 text-navy-900 text-sm border border-navy-200 rounded-lg bg-white/80 focus:border-navy-500 focus:ring-2 focus:ring-navy-100 relative z-10"
+          >
+          <label for="email" class="absolute text-sm z-20">Username</label>
+          <div class="input-line"></div>
+        </div>
+
+        <!-- Input password -->
+        <div class="input-group relative">
+          <input
+            type="password"
+            id="password"
+            placeholder=" "
+            name="password"
+            class="w-full h-12 px-3 pt-1 pb-0.5 pr-11 text-navy-900 text-sm border border-navy-200 rounded-lg bg-white/80 focus:border-navy-500 focus:ring-2 focus:ring-navy-100 relative z-10"
+          >
+          <label for="password" class="absolute text-sm z-20">Kata sandi</label>
+          <div class="input-line"></div>
+          <!-- Tombol toggle password -->
+          <button
+            type="button"
+            id="togglePassword"
+            class="absolute right-3 top-1/2 -translate-y-1/2 z-20 text-navy-300 hover:text-navy-600 w-5 h-5 flex items-center justify-center"
+            aria-label="Tampilkan kata sandi"
+          >
+            <i class="fa-regular fa-eye text-sm" id="eyeIcon"></i>
+          </button>
+        </div>
+
+        <!-- Tombol login -->
+        <button
+          type="submit"
+          class="relative w-full h-11 bg-navy-800 hover:bg-navy-900 active:scale-[0.98] text-white text-sm font-semibold rounded-lg overflow-hidden shadow-lg shadow-navy-800/20 hover:shadow-navy-900/30 mt-2"
+        >
+          <span id="btnText">Masuk</span>
+          <span id="btnSpinner" class="hidden"><span class="spinner"></span></span>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-3 my-6">
+        <div class="flex-1 h-px bg-navy-100"></div>
+        <span class="text-xs text-navy-300 uppercase tracking-wider">Developed by <span class="font-bold">UniversalSigmaTeknologi</span></span>
+        <div class="flex-1 h-px bg-navy-100"></div>
+      </div>
+
+      <!-- Tombol promosi sosial -->
+      <div class="grid grid-cols-2 gap-3">
+        <a
+          href="https://www.instagram.com/sigmatech.digital"
+          target="_blank"
+          rel="noreferrer noopener"
+          id="instagramBtn"
+          class="flex items-center justify-center gap-2 h-11 border border-navy-200 rounded-lg text-sm text-navy-600 font-medium hover:bg-navy-50 hover:border-navy-300 active:scale-[0.98]"
+        >
+          <i class="fa-brands fa-instagram text-base"></i>
+          Instagram
+        </a>
+        <a
+          href="https://github.com/universalsigmateknologi"
+          target="_blank"
+          rel="noreferrer noopener"
+          id="githubBtn"
+          class="flex items-center justify-center gap-2 h-11 border border-navy-200 rounded-lg text-sm text-navy-600 font-medium hover:bg-navy-50 hover:border-navy-300 active:scale-[0.98]"
+        >
+          <i class="fa-brands fa-github text-base"></i>
+          GitHub
+        </a>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <p class="text-center text-xs text-navy-300 mt-6">&copy; 2026 Developed by UniversalSigmaTeknologi</p>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast fixed bottom-6 left-1/2 -translate-x-1/2 bg-navy-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50">
+    <i class="fa-solid fa-circle-info text-navy-300"></i>
+    <span id="toastMsg">Pesan notifikasi</span>
+  </div>
+
+  <script>
+    // === Elemen DOM ===
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const loginBtn = document.getElementById('loginBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const loginForm = document.getElementById('loginForm');
+    const loginCard = document.getElementById('loginCard');
+    const forgotLink = document.getElementById('forgotLink');
+    const registerLink = document.getElementById('registerLink');
+    const googleBtn = document.getElementById('googleBtn');
+    const githubBtn = document.getElementById('githubBtn');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+
+    // === Toggle tampil/sembunyikan password ===
+    let passwordVisible = false;
+    togglePassword.addEventListener('click', () => {
+      passwordVisible = !passwordVisible;
+      passwordInput.type = passwordVisible ? 'text' : 'password';
+      eyeIcon.className = passwordVisible
+        ? 'fa-regular fa-eye-slash text-sm'
+        : 'fa-regular fa-eye text-sm';
+      togglePassword.setAttribute('aria-label', passwordVisible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+    });
+
+    // === Efek ripple pada tombol utama ===
+    loginBtn.addEventListener('click', function (e) {
+      // Buat elemen ripple
+      const ripple = document.createElement('span');
+      ripple.classList.add('ripple');
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      this.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+
+      // Animasi loading singkat (statis, tidak ada logic login)
+      btnText.classList.add('hidden');
+      btnSpinner.classList.remove('hidden');
+      loginBtn.disabled = true;
+      loginBtn.classList.add('opacity-80', 'cursor-wait');
+
+      setTimeout(() => {
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('opacity-80', 'cursor-wait');
+        showToast('Fitur login belum tersedia');
+      }, 1500);
+    });
+
+    // === Link lupa sandi ===
+    forgotLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showToast('Halaman pemulihan sandi belum tersedia');
+    });
+
+    // === Link daftar ===
+    registerLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showToast('Halaman pendaftaran belum tersedia');
+    });
+
+    // === Animasi masuk card saat halaman dimuat ===
+    window.addEventListener('DOMContentLoaded', () => {
+      loginCard.style.opacity = '0';
+      loginCard.style.transform = 'translateY(16px)';
+      loginCard.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          loginCard.style.opacity = '1';
+          loginCard.style.transform = 'translateY(0)';
+        });
+      });
+    });
+
+    // === Toast notification ===
+    let toastTimeout = null;
+    function showToast(message) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastMsg.textContent = message;
+      toast.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // === Efek input: border berubah saat ada isi ===
+    [emailInput, passwordInput].forEach(input => {
+      input.addEventListener('input', () => {
+        if (input.value.trim()) {
+          input.classList.add('border-navy-300');
+        } else {
+          input.classList.remove('border-navy-300');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
