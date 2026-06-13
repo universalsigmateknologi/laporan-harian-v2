@@ -22,6 +22,10 @@
       <i data-lucide="file-text" class="w-[18px] h-[18px]"></i>
       Rekap Laporan
     </a>
+    <a href="{% url 'perencanaan:list' %}" class="sidebar-link {% if active_menu == 'perencanaan' %}active{% else %}text-navy-300{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150">
+      <i data-lucide="calendar" class="w-[18px] h-[18px]"></i>
+      Perencanaan
+    </a>
   </nav>
   <div class="shrink-0 px-4 py-4 border-t border-white/10">
     <div class="flex items-center gap-3">

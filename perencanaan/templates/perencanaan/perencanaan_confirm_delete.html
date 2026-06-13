@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Konfirmasi Hapus Perencanaan — MEDESKA{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+  <div class="bg-white rounded-2xl border border-navy-100 p-6 text-center space-y-6">
+    <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto text-red-600">
+      <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+    </div>
+    
+    <div class="space-y-2">
+      <h2 class="text-xl font-bold text-navy-900">Hapus Perencanaan?</h2>
+      <p class="text-sm text-navy-500">Apakah Anda yakin ingin menghapus perencanaan <strong>"{{ perencanaan.program }}"</strong>? Tindakan ini tidak dapat dibatalkan.</p>
+    </div>
+
+    <form method="post" class="flex items-center justify-center gap-3">
+      {% csrf_token %}
+      <a href="{% url 'perencanaan:list' %}" class="px-6 py-2.5 rounded-xl border border-navy-200 text-sm font-medium text-navy-700 hover:bg-navy-50 transition-colors">Batal</a>
+      <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">Ya, Hapus</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

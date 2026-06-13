@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static perencanaan_extras %}
+
+{% block title %}{{ page_title }} — MEDESKA{% endblock %}
+
+{% block extra_css %}
+<style>
+.table-row { transition: background-color 150ms ease; }
+.table-row:hover { background-color: #f0f3f9; }
+.filter-chip.active { background: #1e3355; color: #fff; border-color: #1e3355; }
+.filter-chip:not(.active):hover { border-color: #8da3cc; }
+.page-btn.active { background: #1e3355; color: #fff; }
+.page-btn:not(.active):hover { background: #f0f3f9; }
+</style>
+{% endblock %}
+
+{% block topbar %}
+<header class="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100 flex items-center justify-between px-4 lg:px-6 shrink-0">
+  <div class="flex items-center gap-3">
+    <button type="button" onclick="toggleSidebar()" class="lg:hidden w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
+      <i data-lucide="menu" class="w-5 h-5 text-navy-700"></i>
+    </button>
+    <div>
+      <h1 class="text-base font-semibold text-navy-900 leading-tight">{{ page_title }}</h1>
+      <p class="text-[12px] text-navy-400 leading-tight hidden sm:block">
+        SMK Nurul Jadid Paiton Probolinggo
+      </p>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <form method="get" action="{% url 'perencanaan:list' %}" class="hidden md:flex items-center bg-navy-50 rounded-lg px-3 py-2 gap-2 w-64 focus-within:ring-2 focus-within:ring-navy-200 transition-all">
+      <i data-lucide="search" class="w-4 h-4 text-navy-400 shrink-0"></i>
+      <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari perencanaan..." class="bg-transparent text-sm text-navy-900 placeholder-navy-400 outline-none w-full">
+    </form>
+    {% if can_edit %}
+    <a href="{% url 'perencanaan:create' %}" class="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      Tambah Perencanaan
+    </a>
+    {% endif %}
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-6">
+  <div class="bg-white rounded-xl border border-navy-100 p-4 hover:shadow-md transition-shadow duration-200">
+    <div class="flex items-center justify-between mb-3">
+      <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+        <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
+      </div>
+      <span class="text-[11px] text-navy-400 font-medium">Total</span>
+    </div>
+    <p class="text-2xl font-semibold text-navy-900">{{ stats.total }}</p>
+    <p class="text-[12px] text-navy-400 mt-0.5">Perencanaan</p>
+  </div>
+  <div class="bg-white rounded-xl border border-navy-100 p-4 hover:shadow-md transition-shadow duration-200">
+    <div class="flex items-center justify-between mb-3">
+      <div class="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center">
+        <i data-lucide="users" class="w-4 h-4 text-violet-600"></i>
+      </div>
+      <span class="text-[11px] text-navy-400 font-medium">Siswa</span>
+    </div>
+    <p class="text-2xl font-semibold text-navy-900">{{ stats.jumlah_siswa }}</p>
+    <p class="text-[12px] text-navy-400 mt-0.5">Siswa terlibat</p>
+  </div>
+  <div class="bg-white rounded-xl border border-navy-100 p-4 hover:shadow-md transition-shadow duration-200">
+    <div class="flex items-center justify-between mb-3">
+      <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
+        <i data-lucide="building" class="w-4 h-4 text-emerald-600"></i>
+      </div>
+      <span class="text-[11px] text-navy-400 font-medium">Client</span>
+    </div>
+    <p class="text-2xl font-semibold text-navy-900">{{ stats.jumlah_client }}</p>
+    <p class="text-[12px] text-navy-400 mt-0.5">Client sasaran</p>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
+  <div class="p-4 lg:p-5 border-b border-navy-100 space-y-4">
+    <form method="get" class="space-y-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Search -->
+        <div class="flex items-center bg-navy-50 rounded-lg px-3 py-1.5 gap-2 w-full sm:w-64 focus-within:ring-2 focus-within:ring-navy-200 transition-all">
+          <i data-lucide="search" class="w-4 h-4 text-navy-400 shrink-0"></i>
+          <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari..." class="bg-transparent text-sm text-navy-900 placeholder-navy-400 outline-none w-full">
+        </div>
+
+        <!-- Jurusan -->
+        <select name="jurusan" class="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-200">
+          <option value="semua">Semua Jurusan</option>
+          {% for j in jurusan_list %}
+          <option value="{{ j.kode }}" {% if filters.jurusan == j.kode %}selected{% endif %}>{{ j.kode }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Date Range -->
+        <div class="flex items-center gap-2">
+          <input type="date" name="start_date" value="{{ filters.start_date }}" class="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-200">
+          <span class="text-navy-400">s/d</span>
+          <input type="date" name="end_date" value="{{ filters.end_date }}" class="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-200">
+        </div>
+
+        <!-- Order -->
+        <select name="order" class="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-200">
+          <option value="desc" {% if filters.order == 'desc' %}selected{% endif %}>Terbaru</option>
+          <option value="asc" {% if filters.order == 'asc' %}selected{% endif %}>Terlama</option>
+        </select>
+
+        <button type="submit" class="bg-navy-800 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-navy-900 transition-colors">Filter</button>
+        {% if has_active_filters %}
+        <a href="{% url 'perencanaan:list' %}" class="text-red-500 text-sm font-medium hover:text-red-600">Reset</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  {% if page_obj %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-navy-100 bg-navy-50/60">
+          <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500 w-10">No</th>
+          <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Program / Kegiatan</th>
+          <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Kategori</th>
+          <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Siswa</th>
+          <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Client / Sasaran</th>
+          <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Waktu</th>
+          <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500 w-24">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in page_obj %}
+        <tr class="table-row border-b border-navy-50">
+          <td class="px-4 lg:px-5 py-4 text-navy-400 text-[13px]">{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+          <td class="px-4 lg:px-5 py-4">
+            <p class="font-medium text-navy-900 line-clamp-2">{{ item.program }}</p>
+            <p class="text-[12px] text-navy-500 line-clamp-2">{{ item.kegiatan }}</p>
+          </td>
+          <td class="px-4 lg:px-5 py-4">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-navy-50 text-navy-700 text-[12px]">{{ item.kategori.nama }}</span>
+          </td>
+          <td class="px-4 lg:px-5 py-4">
+            <p class="text-navy-900">{{ item.siswa.nama_lengkap }}</p>
+            <p class="text-[11px] text-navy-400">{{ item.siswa.jurusan.kode }}</p>
+          </td>
+          <td class="px-4 lg:px-5 py-4">
+            <p class="text-navy-900">{{ item.client.name }}</p>
+            <p class="text-[11px] text-navy-400">{{ item.client.instansi }}</p>
+          </td>
+          <td class="px-4 lg:px-5 py-4 text-navy-400 text-[12px]">{{ item.waktu|date:"d M Y" }}</td>
+          <td class="px-4 lg:px-5 py-4">
+            {% if can_edit %}
+            <div class="flex items-center gap-2">
+              <a href="{% url 'perencanaan:update' item.pk %}" class="p-1.5 rounded-md hover:bg-navy-50 text-navy-400 hover:text-navy-600 transition-colors">
+                <i data-lucide="edit-2" class="w-4 h-4"></i>
+              </a>
+              <a href="{% url 'perencanaan:delete' item.pk %}" class="p-1.5 rounded-md hover:bg-red-50 text-navy-400 hover:text-red-600 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </a>
+            </div>
+            {% else %}
+            <span class="text-navy-300 text-[11px]">Read-only</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="flex items-center justify-between px-4 lg:px-5 py-4 border-t border-navy-100 bg-navy-50/30">
+    <p class="text-[12px] text-navy-400">
+      Menampilkan {{ page_obj.start_index }}–{{ page_obj.end_index }} dari {{ page_obj.paginator.count }} entri
+    </p>
+    <div class="flex items-center gap-1">
+      {% if page_obj.has_previous %}
+      <a href="?{% query_transform page=page_obj.previous_page_number %}" class="page-btn w-8 h-8 rounded-lg border border-navy-200 flex items-center justify-center text-navy-500 hover:bg-navy-50 transition-colors">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      </a>
+      {% endif %}
+      
+      <span class="text-sm font-medium text-navy-700 px-2">Halaman {{ page_obj.number }} dari {{ page_obj.paginator.num_pages }}</span>
+      
+      {% if page_obj.has_next %}
+      <a href="?{% query_transform page=page_obj.next_page_number %}" class="page-btn w-8 h-8 rounded-lg border border-navy-200 flex items-center justify-center text-navy-500 hover:bg-navy-50 transition-colors">
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="py-16 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-navy-50 flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="search-x" class="w-7 h-7 text-navy-300"></i>
+    </div>
+    <p class="text-navy-700 font-medium text-sm">Tidak ada data ditemukan</p>
+    <a href="{% url 'perencanaan:list' %}" class="inline-block mt-4 px-4 py-2 bg-navy-800 text-white text-sm font-medium rounded-lg hover:bg-navy-900 transition-colors">Reset Filter</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function query_transform(params) {
+    let url = new URL(window.location.href);
+    for (let key in params) {
+      url.searchParams.set(key, params[key]);
+    }
+    return url.search;
+  }
+</script>
+{% endblock %}

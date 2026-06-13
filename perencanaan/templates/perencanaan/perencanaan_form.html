@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} — MEDESKA{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-input { transition: border-color 150ms ease, box-shadow 150ms ease; }
+  .form-input:focus { border-color: #3d5a8a; box-shadow: 0 0 0 3px rgba(61, 90, 138, 0.12); }
+  .form-input.error { border-color: #ef4444; }
+  .error-text { color: #ef4444; font-size: 0.85rem; }
+</style>
+{% endblock extra_css %}
+
+{% block topbar %}
+<header class="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100 flex items-center justify-between px-4 lg:px-6 shrink-0">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'perencanaan:list' %}" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
+      <i data-lucide="arrow-left" class="w-4 h-4 text-navy-700"></i>
+    </a>
+    <div>
+      <h1 class="text-base font-semibold text-navy-900 leading-tight">{{ page_title }}</h1>
+      <p class="text-[12px] text-navy-400 leading-tight hidden sm:block">Buat perencanaan program dan kegiatan Anda.</p>
+    </div>
+  </div>
+  <button type="submit" form="perencanaanForm" class="hidden md:inline-flex items-center gap-2 bg-navy-800 hover:bg-navy-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+    <i data-lucide="send" class="w-4 h-4"></i>
+    Simpan Perencanaan
+  </button>
+</header>
+{% endblock topbar %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+  {% if messages %}
+  <div class="space-y-2">
+    {% for message in messages %}
+    <div class="rounded-2xl border px-4 py-3 text-sm {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form id="perencanaanForm" method="post" class="bg-white rounded-2xl border border-navy-100 p-6 space-y-6">
+    {% csrf_token %}
+
+    <div class="grid gap-4 lg:grid-cols-2">
+      {% if form.siswa %}
+      <div>
+        <label class="block text-sm font-semibold text-navy-900 mb-2" for="{{ form.siswa.id_for_label }}">Nama Siswa</label>
+        {{ form.siswa }}
+        {% if form.siswa.errors %}<p class="error-text mt-2">{{ form.siswa.errors.as_text }}</p>{% endif %}
+      </div>
+      {% endif %}
+      
+      <div>
+        <label class="block text-sm font-semibold text-navy-900 mb-2" for="{{ form.kategori.id_for_label }}">Kategori Perencanaan</label>
+        {{ form.kategori }}
+        {% if form.kategori.errors %}<p class="error-text mt-2">{{ form.kategori.errors.as_text }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-navy-900 mb-2" for="{{ form.client.id_for_label }}">Client / Sasaran</label>
+        {{ form.client }}
+        {% if form.client.errors %}<p class="error-text mt-2">{{ form.client.errors.as_text }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-navy-900 mb-2" for="{{ form.waktu.id_for_label }}">Waktu / Tanggal</label>
+        {{ form.waktu }}
+        {% if form.waktu.errors %}<p class="error-text mt-2">{{ form.waktu.errors.as_text }}</p>{% endif %}
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-navy-900 mb-2" for="{{ form.program.id_for_label }}">Program</label>
+        {{ form.program }}
+        {% if form.program.errors %}<p class="error-text mt-2">{{ form.program.errors.as_text }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-navy-900 mb-2" for="{{ form.kegiatan.id_for_label }}">Kegiatan</label>
+        {{ form.kegiatan }}
+        {% if form.kegiatan.errors %}<p class="error-text mt-2">{{ form.kegiatan.errors.as_text }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-navy-900 mb-2" for="{{ form.indikator_pencapaian.id_for_label }}">Indikator Pencapaian</label>
+        {{ form.indikator_pencapaian }}
+        {% if form.indikator_pencapaian.errors %}<p class="error-text mt-2">{{ form.indikator_pencapaian.errors.as_text }}</p>{% endif %}
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-navy-50">
+      <a href="{% url 'perencanaan:list' %}" class="inline-flex items-center justify-center rounded-xl border border-navy-200 px-6 py-3 text-sm font-medium text-navy-700 hover:bg-navy-50 transition-colors">Batal</a>
+      <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-navy-800 px-6 py-3 text-sm font-medium text-white hover:bg-navy-900 transition-colors">Simpan Perencanaan</button>
+    </div>
+  </form>
+</div>
+{% endblock content %}

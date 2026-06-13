@@ -27,6 +27,7 @@ urlpatterns = [
     path("pembimbing/", pembimbing_admin_site.urls, name="pembimbing"),
     path("", include("accounts.urls")),  # URL untuk aplikasi accounts
     path("laporan/", include("laporan.urls")),
+    path("perencanaan/", include("perencanaan.urls")),
 ]
 
 # Sajikan file media di mode development
