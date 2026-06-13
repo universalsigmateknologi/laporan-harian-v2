@@ -66,13 +66,18 @@ def perencanaan_create(request):
         return redirect("perencanaan:list")
     
     show_siswa = request.user.role == 'admin'
+    siswa = getattr(request.user, "siswa", None)
+    
+    if request.user.role == 'siswa' and not siswa:
+        messages.error(request, "Profil siswa tidak ditemukan. Silakan hubungi admin.")
+        return redirect("perencanaan:list")
     
     if request.method == "POST":
         form = PerencanaanForm(request.POST, show_siswa=show_siswa)
         if form.is_valid():
             perencanaan = form.save(commit=False)
             if request.user.role == 'siswa':
-                perencanaan.siswa = request.user.siswa
+                perencanaan.siswa = siswa
             perencanaan.save()
             messages.success(request, "Perencanaan berhasil ditambahkan.")
             return redirect("perencanaan:list")
@@ -89,11 +94,14 @@ def perencanaan_create(request):
 @login_required
 def perencanaan_update(request, pk):
     perencanaan = get_object_or_404(Perencanaan, pk=pk)
+    siswa = getattr(request.user, "siswa", None)
     
     # Permission check
-    if request.user.role == 'siswa' and perencanaan.siswa.user != request.user:
-        messages.error(request, "Anda hanya dapat mengubah perencanaan milik sendiri.")
-        return redirect("perencanaan:list")
+    if request.user.role == 'siswa':
+        if not siswa or perencanaan.siswa_id != siswa.id:
+            messages.error(request, "Anda hanya dapat mengubah perencanaan milik sendiri.")
+            return redirect("perencanaan:list")
+            
     if request.user.role not in ['siswa', 'admin']:
         messages.error(request, "Anda tidak memiliki akses untuk mengubah perencanaan.")
         return redirect("perencanaan:list")
@@ -120,11 +128,14 @@ def perencanaan_update(request, pk):
 @login_required
 def perencanaan_delete(request, pk):
     perencanaan = get_object_or_404(Perencanaan, pk=pk)
+    siswa = getattr(request.user, "siswa", None)
     
     # Permission check
-    if request.user.role == 'siswa' and perencanaan.siswa.user != request.user:
-        messages.error(request, "Anda hanya dapat menghapus perencanaan milik sendiri.")
-        return redirect("perencanaan:list")
+    if request.user.role == 'siswa':
+        if not siswa or perencanaan.siswa_id != siswa.id:
+            messages.error(request, "Anda hanya dapat menghapus perencanaan milik sendiri.")
+            return redirect("perencanaan:list")
+            
     if request.user.role not in ['siswa', 'admin']:
         messages.error(request, "Anda tidak memiliki akses untuk menghapus perencanaan.")
         return redirect("perencanaan:list")
