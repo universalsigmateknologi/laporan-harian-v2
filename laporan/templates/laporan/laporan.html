@@ -46,16 +46,15 @@
   <div class="flex items-center gap-2">
     <form method="get" action="{% url 'laporan:rekap_harian' %}" class="hidden md:flex items-center bg-navy-50 rounded-lg px-3 py-2 gap-2 w-64 focus-within:ring-2 focus-within:ring-navy-200 transition-all">
       {% if filters.jurusan != 'semua' %}<input type="hidden" name="jurusan" value="{{ filters.jurusan }}">{% endif %}
-      {% if filters.tanggal %}<input type="hidden" name="tanggal" value="{{ filters.tanggal }}">{% endif %}
+      {% if filters.tanggal_dari %}<input type="hidden" name="tanggal_dari" value="{{ filters.tanggal_dari }}">{% endif %}
+      {% if filters.tanggal_sampai %}<input type="hidden" name="tanggal_sampai" value="{{ filters.tanggal_sampai }}">{% endif %}
       {% if filters.status != 'semua' %}<input type="hidden" name="status" value="{{ filters.status }}">{% endif %}
+
       <i data-lucide="search" class="w-4 h-4 text-navy-400 shrink-0"></i>
       <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari siswa..." class="bg-transparent text-sm text-navy-900 placeholder-navy-400 outline-none w-full">
     </form>
     <button type="button" onclick="toggleMobileSearch()" class="md:hidden w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
       <i data-lucide="search" class="w-4 h-4 text-navy-600"></i>
-    </button>
-    <button type="button" onclick="openScanner()" title="Scan QR Laporan" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
-      <i data-lucide="camera" class="w-4 h-4 text-navy-600"></i>
     </button>
     {% if is_siswa %}
       {% if today_laporan %}
@@ -116,8 +115,10 @@
 <div id="mobileSearch" class="hidden md:hidden bg-white border-b border-navy-100 px-4 py-3">
   <form method="get" action="{% url 'laporan:rekap_harian' %}" class="flex items-center bg-navy-50 rounded-lg px-3 py-2 gap-2 focus-within:ring-2 focus-within:ring-navy-200 transition-all">
     {% if filters.jurusan != 'semua' %}<input type="hidden" name="jurusan" value="{{ filters.jurusan }}">{% endif %}
-    {% if filters.tanggal %}<input type="hidden" name="tanggal" value="{{ filters.tanggal }}">{% endif %}
+    {% if filters.tanggal_dari %}<input type="hidden" name="tanggal_dari" value="{{ filters.tanggal_dari }}">{% endif %}
+    {% if filters.tanggal_sampai %}<input type="hidden" name="tanggal_sampai" value="{{ filters.tanggal_sampai }}">{% endif %}
     {% if filters.status != 'semua' %}<input type="hidden" name="status" value="{{ filters.status }}">{% endif %}
+
     <i data-lucide="search" class="w-4 h-4 text-navy-400 shrink-0"></i>
     <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari siswa..." class="bg-transparent text-sm text-navy-900 placeholder-navy-400 outline-none w-full">
   </form>
@@ -177,41 +178,40 @@
         <span>Data dari database laporan harian</span>
       </div>
     </div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <div class="relative">
-        <button type="button" onclick="toggleDropdown('jurusanDropdown')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:border-navy-300 transition-colors">
-          <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
-          <span>{{ jurusan_label }}</span>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-navy-400"></i>
-        </button>
-        <div id="jurusanDropdown" class="hidden absolute top-full left-0 mt-1 w-44 bg-white rounded-lg border border-navy-200 shadow-lg py-1 z-20">
-          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query jurusan='semua' %}" class="block w-full text-left px-3 py-2 text-sm text-navy-700 hover:bg-navy-50 transition-colors">Semua Jurusan</a>
-          {% for j in jurusan_list %}
-          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query jurusan=j.kode %}" class="block w-full text-left px-3 py-2 text-sm text-navy-700 hover:bg-navy-50 transition-colors">{{ j.kode }}</a>
-          {% endfor %}
+    <div>
+      <form method="get" action="{% url 'laporan:rekap_harian' %}" class="flex flex-wrap items-center gap-2">
+        <div class="relative">
+          <button type="button" onclick="toggleDropdown('jurusanDropdown')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:border-navy-300 transition-colors">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+            <span>{{ jurusan_label }}</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-navy-400"></i>
+          </button>
+          <div id="jurusanDropdown" class="hidden absolute top-full left-0 mt-1 w-44 bg-white rounded-lg border border-navy-200 shadow-lg py-1 z-20">
+            <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query jurusan='semua' %}" class="block w-full text-left px-3 py-2 text-sm text-navy-700 hover:bg-navy-50 transition-colors">Semua Jurusan</a>
+            {% for j in jurusan_list %}
+            <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query jurusan=j.kode %}" class="block w-full text-left px-3 py-2 text-sm text-navy-700 hover:bg-navy-50 transition-colors">{{ j.kode }}</a>
+            {% endfor %}
+          </div>
         </div>
-      </div>
 
-      <div class="relative">
-        <button type="button" onclick="toggleDropdown('tanggalDropdown')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 hover:border-navy-300 transition-colors">
-          <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-          <span>{{ tanggal_label }}</span>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-navy-400"></i>
-        </button>
-        <div id="tanggalDropdown" class="hidden absolute top-full left-0 mt-1 w-56 bg-white rounded-lg border border-navy-200 shadow-lg py-1 z-20 max-h-60 overflow-y-auto">
-          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query tanggal='' %}" class="block w-full text-left px-3 py-2 text-sm text-navy-700 hover:bg-navy-50 transition-colors">Semua Tanggal</a>
-          {% for opt in tanggal_options %}
-          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query tanggal=opt.value %}" class="block w-full text-left px-3 py-2 text-sm text-navy-700 hover:bg-navy-50 transition-colors">{{ opt.label }}</a>
-          {% endfor %}
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-navy-400"></i>
+            <input type="date" name="tanggal_dari" value="{{ filters.tanggal_dari }}" class="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-200">
+            <span class="text-navy-400 text-sm">s/d</span>
+            <input type="date" name="tanggal_sampai" value="{{ filters.tanggal_sampai }}" class="px-3 py-1.5 rounded-lg border border-navy-200 text-sm text-navy-600 focus:outline-none focus:ring-2 focus:ring-navy-200">
+          </div>
         </div>
-      </div>
 
-      <div class="flex items-center gap-1.5 ml-auto">
-        <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query status='semua' %}" class="filter-chip {% if filters.status == 'semua' %}active{% else %}text-navy-600{% endif %} px-3 py-1.5 rounded-lg border border-navy-200 text-sm transition-colors duration-150">Semua</a>
-        <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query status='dalam-proses' %}" class="filter-chip {% if filters.status == 'dalam-proses' %}active{% else %}text-navy-600{% endif %} px-3 py-1.5 rounded-lg border border-navy-200 text-sm transition-colors duration-150">Dalam Proses</a>
-        <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query status='selesai' %}" class="filter-chip {% if filters.status == 'selesai' %}active{% else %}text-navy-600{% endif %} px-3 py-1.5 rounded-lg border border-navy-200 text-sm transition-colors duration-150">Selesai</a>
-      </div>
+        <div class="flex items-center gap-1.5 ml-auto">
+          <input type="hidden" name="jurusan" value="{{ filters.jurusan }}">
+          <input type="hidden" name="q" value="{{ filters.q }}">
+          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query status='semua' %}" class="filter-chip {% if filters.status == 'semua' %}active{% else %}text-navy-600{% endif %} px-3 py-1.5 rounded-lg border border-navy-200 text-sm transition-colors duration-150">Semua</a>
+          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query status='dalam-proses' %}" class="filter-chip {% if filters.status == 'dalam-proses' %}active{% else %}text-navy-600{% endif %} px-3 py-1.5 rounded-lg border border-navy-200 text-sm transition-colors duration-150">Dalam Proses</a>
+          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query status='selesai' %}" class="filter-chip {% if filters.status == 'selesai' %}active{% else %}text-navy-600{% endif %} px-3 py-1.5 rounded-lg border border-navy-200 text-sm transition-colors duration-150">Selesai</a>
+          <button type="submit" class="bg-navy-800 hover:bg-navy-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors">Filter</button>
+        </div>
+      </form>
     </div>
 
     {% if has_active_filters %}
@@ -227,7 +227,7 @@
         {% if filter_labels.tanggal %}
         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-navy-100 text-navy-700 text-[11px] font-medium">
           Tanggal: {{ filter_labels.tanggal }}
-          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query tanggal='' %}" class="hover:text-navy-900 ml-0.5">&times;</a>
+          <a href="{% url 'laporan:rekap_harian' %}?{% laporan_query tanggal_dari='' tanggal_sampai='' %}" class="hover:text-navy-900 ml-0.5">&times;</a>
         </span>
         {% endif %}
         {% if filter_labels.status %}
@@ -501,13 +501,6 @@
 
   function handleOverlayClick(e) {
     if (e.target.id === 'slideshowOverlay') closeSlideshow();
-  }
-
-  function openScanner() {
-    const input = document.getElementById('qrScanInput');
-    if (!input) return;
-    input.value = '';
-    input.click();
   }
 
   async function handleQrFileInput(event) {

@@ -31,7 +31,9 @@ from utils.utils import role_required
 def _parse_filters(request):
     return {
         "q": request.GET.get("q", "").strip(),
-        "tanggal": request.GET.get("tanggal", "").strip(),
+        "tanggal_dari": request.GET.get("tanggal_dari", "").strip(),
+        "tanggal_sampai": request.GET.get("tanggal_sampai", "").strip(),
+
         "jurusan": request.GET.get("jurusan", "").strip() or "semua",
         "status": request.GET.get("status", "").strip() or "semua",
     }
@@ -44,7 +46,8 @@ def _get_filtered_queryset(request):
     return apply_filters(
         qs,
         q=filters["q"],
-        tanggal=filters["tanggal"],
+        tanggal_dari=filters["tanggal_dari"],
+        tanggal_sampai=filters["tanggal_sampai"],
         jurusan=filters["jurusan"],
         status=filters["status"],
         laporan_id=request.GET.get("laporan_id", "").strip(),
@@ -195,7 +198,8 @@ def rekap_harian(request):
     filtered_qs = apply_filters(
         base_qs,
         q=filters["q"],
-        tanggal=filters["tanggal"],
+        tanggal_dari=filters["tanggal_dari"],
+        tanggal_sampai=filters["tanggal_sampai"],
         jurusan=filters["jurusan"],
         status=filters["status"],
     )
@@ -208,18 +212,19 @@ def rekap_harian(request):
     stats = get_rekap_stats(base_qs)
     filter_labels = get_filter_labels(filters)
 
+
     jurusan_label = "Semua Jurusan"
     if filters["jurusan"] and filters["jurusan"] != "semua":
         jurusan_label = filters["jurusan"].upper()
 
     tanggal_label = "Semua Tanggal"
-    if filters["tanggal"]:
-        for opt in tanggal_options:
-            if opt["value"] == filters["tanggal"]:
-                tanggal_label = opt["label"]
-                break
-        else:
-            tanggal_label = filters["tanggal"]
+    if filters.get("tanggal_dari") and filters.get("tanggal_sampai"):
+        tanggal_label = f"{filters['tanggal_dari']} s/d {filters['tanggal_sampai']}"
+    elif filters.get("tanggal_dari"):
+        tanggal_label = f"Dari {filters['tanggal_dari']}"
+    elif filters.get("tanggal_sampai"):
+        tanggal_label = f"Sampai {filters['tanggal_sampai']}"
+
 
     display_name = request.user.get_full_name() or request.user.username
 
@@ -295,7 +300,8 @@ def laporan_detail(request, pk):
     filtered_qs = apply_filters(
         base_qs,
         q=filters["q"],
-        tanggal=filters["tanggal"],
+        tanggal_dari=filters["tanggal_dari"],
+        tanggal_sampai=filters["tanggal_sampai"],
         jurusan=filters["jurusan"],
         status=filters["status"],
     )

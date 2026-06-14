@@ -59,10 +59,14 @@ def apply_filters(
     *,
     q: str = "",
     tanggal: str = "",
+    tanggal_dari: str = "",
+    tanggal_sampai: str = "",
+
     jurusan: str = "",
     status: str = "",
     laporan_id: str = "",
 ) -> QuerySet:
+
     if laporan_id:
         try:
             queryset = queryset.filter(pk=int(laporan_id))
@@ -73,13 +77,27 @@ def apply_filters(
         queryset = queryset.filter(
             Q(siswa__nama_lengkap__icontains=q) | Q(siswa__nis__icontains=q)
         )
-    if tanggal:
-        try:
-            parsed = date.fromisoformat(tanggal)
-        except ValueError:
-            parsed = None
-        if parsed:
-            queryset = queryset.filter(created_at__date=parsed)
+    if tanggal_dari or tanggal_sampai:
+        parsed_from = None
+        parsed_to = None
+        if tanggal_dari:
+            try:
+                parsed_from = date.fromisoformat(tanggal_dari)
+            except ValueError:
+                parsed_from = None
+        if tanggal_sampai:
+            try:
+                parsed_to = date.fromisoformat(tanggal_sampai)
+            except ValueError:
+                parsed_to = None
+
+        if parsed_from and parsed_to:
+            queryset = queryset.filter(created_at__date__gte=parsed_from, created_at__date__lte=parsed_to)
+        elif parsed_from:
+            queryset = queryset.filter(created_at__date__gte=parsed_from)
+        elif parsed_to:
+            queryset = queryset.filter(created_at__date__lte=parsed_to)
+
     if jurusan and jurusan != "semua":
         queryset = queryset.filter(siswa__jurusan__kode__iexact=jurusan)
     if status and status != "semua":
@@ -168,12 +186,26 @@ def get_filter_labels(filters: dict) -> dict:
     labels = {}
     if filters.get("jurusan") and filters["jurusan"] != "semua":
         labels["jurusan"] = filters["jurusan"].upper()
-    if filters.get("tanggal"):
+    if filters.get("tanggal_dari") and filters.get("tanggal_sampai"):
         try:
-            d = date.fromisoformat(filters["tanggal"])
-            labels["tanggal"] = format_tanggal_short(d)
+            d_from = date.fromisoformat(filters["tanggal_dari"])
+            d_to = date.fromisoformat(filters["tanggal_sampai"])
+            labels["tanggal"] = f"{format_tanggal_short(d_from)} - {format_tanggal_short(d_to)}"
         except ValueError:
-            labels["tanggal"] = filters["tanggal"]
+            labels["tanggal"] = f"{filters.get('tanggal_dari')} - {filters.get('tanggal_sampai')}"
+    elif filters.get("tanggal_dari"):
+        try:
+            d_from = date.fromisoformat(filters["tanggal_dari"])
+            labels["tanggal"] = f"Dari {format_tanggal_short(d_from)}"
+        except ValueError:
+            labels["tanggal"] = f"Dari {filters.get('tanggal_dari')}"
+    elif filters.get("tanggal_sampai"):
+        try:
+            d_to = date.fromisoformat(filters["tanggal_sampai"])
+            labels["tanggal"] = f"Sampai {format_tanggal_short(d_to)}"
+        except ValueError:
+            labels["tanggal"] = f"Sampai {filters.get('tanggal_sampai')}"
+
     if filters.get("status") and filters["status"] != "semua":
         labels["status"] = STATUS_LABELS.get(
             filters["status"], filters["status"]
@@ -187,7 +219,8 @@ def has_active_filters(filters: dict) -> bool:
     return bool(
         filters.get("q")
         or (filters.get("jurusan") and filters["jurusan"] != "semua")
-        or filters.get("tanggal")
+        or filters.get("tanggal_dari")
+        or filters.get("tanggal_sampai")
         or (filters.get("status") and filters["status"] != "semua")
     )
 
