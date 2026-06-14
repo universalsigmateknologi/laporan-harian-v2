@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Hapus Kategori — MEDESKA{% endblock %}
+
+{% block extra_css %}
+<style>
+  .btn-danger { background: #ef4444; }
+  .btn-danger:hover { background: #dc2626; }
+</style>
+{% endblock %}
+
+{% block topbar %}
+<header class="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100 flex items-center justify-between px-4 lg:px-6 shrink-0">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'perencanaan:kategori_list' %}" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
+      <i data-lucide="arrow-left" class="w-4 h-4 text-navy-700"></i>
+    </a>
+    <div>
+      <h1 class="text-base font-semibold text-navy-900 leading-tight">Konfirmasi Hapus</h1>
+      <p class="text-[12px] text-navy-400 leading-tight hidden sm:block">Kategori yang dihapus tidak dapat dipulihkan.</p>
+    </div>
+  </div>
+</header>
+{% endblock topbar %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+  {% if messages %}
+  <div class="space-y-2">
+    {% for message in messages %}
+      <div class="rounded-2xl border px-4 py-3 text-sm {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="bg-white rounded-2xl border border-navy-100 p-6 space-y-4">
+    <div>
+      <p class="text-sm text-navy-700">Anda yakin ingin menghapus kategori berikut?</p>
+      <div class="mt-2">
+        <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-red-50 text-red-700 text-[12px]">{{ kategori.nama }}</span>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-navy-50">
+      <a href="{% url 'perencanaan:kategori_list' %}" class="inline-flex items-center justify-center rounded-xl border border-navy-200 px-6 py-3 text-sm font-medium text-navy-700 hover:bg-navy-50 transition-colors">Batal</a>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="inline-flex items-center justify-center rounded-xl btn-danger px-6 py-3 text-sm font-medium text-white hover:bg-red-600 transition-colors">Hapus</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} — MEDESKA{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table-row { transition: background-color 150ms ease; }
+  .table-row:hover { background-color: #f0f3f9; }
+</style>
+{% endblock %}
+
+{% block topbar %}
+<header class="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100 flex items-center justify-between px-4 lg:px-6 shrink-0">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'perencanaan:kategori_list' %}" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
+      <i data-lucide="arrow-left" class="w-4 h-4 text-navy-700"></i>
+    </a>
+    <div>
+      <h1 class="text-base font-semibold text-navy-900 leading-tight">{{ page_title }}</h1>
+      <p class="text-[12px] text-navy-400 leading-tight hidden sm:block">Kelola kategori perencanaan Anda.</p>
+    </div>
+  </div>
+
+  <a href="{% url 'perencanaan:kategori_create' %}" class="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Tambah Kategori
+  </a>
+</header>
+{% endblock topbar %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+  {% if messages %}
+  <div class="space-y-2">
+    {% for message in messages %}
+      <div class="rounded-2xl border px-4 py-3 text-sm {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="bg-white rounded-xl border border-navy-100 overflow-hidden">
+    <div class="p-4 lg:p-5 border-b border-navy-100">
+      <p class="text-sm text-navy-600">
+        Total kategori: <span class="font-semibold text-navy-900">{{ page_obj|length|default:0 }}</span>
+      </p>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-navy-100 bg-navy-50/60">
+            <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Nama</th>
+            <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Keterangan</th>
+            <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500 w-24">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in page_obj %}
+          <tr class="table-row border-b border-navy-50">
+            <td class="px-4 lg:px-5 py-4">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-navy-50 text-navy-700 text-[12px]">{{ item.nama }}</span>
+            </td>
+            <td class="px-4 lg:px-5 py-4">
+              <p class="text-navy-700 line-clamp-2">{{ item.keterangan|default:"-" }}</p>
+            </td>
+            <td class="px-4 lg:px-5 py-4">
+              <div class="flex items-center gap-2">
+                <a href="{% url 'perencanaan:kategori_update' item.pk %}" class="p-1.5 rounded-md hover:bg-navy-50 text-navy-400 hover:text-navy-600 transition-colors">
+                  <i data-lucide="edit-2" class="w-4 h-4"></i>
+                </a>
+                <a href="{% url 'perencanaan:kategori_delete' item.pk %}" class="p-1.5 rounded-md hover:bg-red-50 text-navy-400 hover:text-red-600 transition-colors">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="px-4 lg:px-5 py-10 text-center">
+              <p class="text-navy-700 font-medium text-sm">Belum ada kategori.</p>
+              <a href="{% url 'perencanaan:kategori_create' %}" class="inline-block mt-4 px-4 py-2 bg-navy-800 text-white text-sm font-medium rounded-lg hover:bg-navy-900 transition-colors">
+                Tambah kategori
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+

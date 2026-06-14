@@ -4,12 +4,116 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Perencanaan, Client, KategoriPerencanaan
-from .forms import PerencanaanForm
+from .forms import PerencanaanForm, KategoriPerencanaanForm
 from .services import (
+
     get_base_queryset, apply_filters, get_perencanaan_stats, 
     get_jurusan_aktif, get_filter_labels, has_active_filters, PER_PAGE
 )
 from utils.utils import role_required
+
+
+@login_required
+def kategori_list(request):
+    siswa = getattr(request.user, "siswa", None)
+    if request.user.role != "siswa" or not siswa:
+        messages.error(request, "Anda tidak memiliki akses.")
+        return redirect("perencanaan:kategori_list")
+
+    kategori_qs = KategoriPerencanaan.objects.filter(siswa=siswa).order_by("nama")
+    return render(
+        request,
+        "perencanaan/kategori_list.html",
+        {
+            "page_title": "Kategori Perencanaan",
+            "active_menu": "kategori_perencanaan",
+            "page_obj": kategori_qs,
+        },
+    )
+
+
+@login_required
+def kategori_create(request):
+    siswa = getattr(request.user, "siswa", None)
+    if request.user.role != "siswa" or not siswa:
+        messages.error(request, "Anda tidak memiliki akses.")
+        return redirect("perencanaan:kategori_list")
+
+    if request.method == "POST":
+        form = KategoriPerencanaanForm(request.POST)
+        if form.is_valid():
+            kategori = form.save(commit=False)
+            kategori.siswa = siswa
+            kategori.save()
+            messages.success(request, "Kategori berhasil ditambahkan.")
+            return redirect("perencanaan:kategori_list")
+    else:
+        form = KategoriPerencanaanForm()
+
+    return render(
+        request,
+        "perencanaan/kategori_form.html",
+        {
+            "page_title": "Tambah Kategori Perencanaan",
+            "active_menu": "kategori_perencanaan",
+            "form": form,
+        },
+    )
+
+
+@login_required
+def kategori_update(request, pk):
+    siswa = getattr(request.user, "siswa", None)
+    if request.user.role != "siswa" or not siswa:
+        messages.error(request, "Anda tidak memiliki akses.")
+        return redirect("perencanaan:kategori_list")
+
+    kategori = get_object_or_404(KategoriPerencanaan, pk=pk, siswa=siswa)
+
+    if request.method == "POST":
+        form = KategoriPerencanaanForm(request.POST, instance=kategori)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Kategori berhasil diperbarui.")
+            return redirect("perencanaan:kategori_list")
+    else:
+        form = KategoriPerencanaanForm(instance=kategori)
+
+    return render(
+        request,
+        "perencanaan/kategori_form.html",
+        {
+            "page_title": "Edit Kategori Perencanaan",
+            "active_menu": "kategori_perencanaan",
+            "form": form,
+        },
+    )
+
+
+@login_required
+def kategori_delete(request, pk):
+    siswa = getattr(request.user, "siswa", None)
+    if request.user.role != "siswa" or not siswa:
+        messages.error(request, "Anda tidak memiliki akses.")
+        return redirect("perencanaan:kategori_list")
+
+    kategori = get_object_or_404(KategoriPerencanaan, pk=pk, siswa=siswa)
+
+    if request.method == "POST":
+        kategori.delete()
+        messages.success(request, "Kategori berhasil dihapus.")
+        return redirect("perencanaan:kategori_list")
+
+    return render(
+        request,
+        "perencanaan/kategori_confirm_delete.html",
+        {
+            "kategori": kategori,
+            "page_title": "Hapus Kategori Perencanaan",
+            "active_menu": "kategori_perencanaan",
+        },
+    )
+
 
 def _parse_filters(request):
     return {
@@ -61,29 +165,29 @@ def perencanaan_list(request):
 
 @login_required
 def perencanaan_create(request):
-    if request.user.role not in ['siswa', 'admin']:
+    if request.user.role not in ["siswa", "admin"]:
         messages.error(request, "Anda tidak memiliki akses untuk menambah perencanaan.")
         return redirect("perencanaan:list")
-    
-    show_siswa = request.user.role == 'admin'
+
+    show_siswa = request.user.role == "admin"
     siswa = getattr(request.user, "siswa", None)
-    
-    if request.user.role == 'siswa' and not siswa:
+
+    if request.user.role == "siswa" and not siswa:
         messages.error(request, "Profil siswa tidak ditemukan. Silakan hubungi admin.")
         return redirect("perencanaan:list")
-    
+
     if request.method == "POST":
-        form = PerencanaanForm(request.POST, show_siswa=show_siswa)
+        form = PerencanaanForm(request.POST, show_siswa=show_siswa, siswa=siswa)
         if form.is_valid():
             perencanaan = form.save(commit=False)
-            if request.user.role == 'siswa':
+            if request.user.role == "siswa":
                 perencanaan.siswa = siswa
             perencanaan.save()
             messages.success(request, "Perencanaan berhasil ditambahkan.")
             return redirect("perencanaan:list")
     else:
-        form = PerencanaanForm(show_siswa=show_siswa)
-    
+        form = PerencanaanForm(show_siswa=show_siswa, siswa=siswa)
+
     context = {
         "page_title": "Tambah Perencanaan",
         "active_menu": "perencanaan",
@@ -91,32 +195,38 @@ def perencanaan_create(request):
     }
     return render(request, "perencanaan/perencanaan_form.html", context)
 
+
 @login_required
 def perencanaan_update(request, pk):
     perencanaan = get_object_or_404(Perencanaan, pk=pk)
     siswa = getattr(request.user, "siswa", None)
-    
+
     # Permission check
-    if request.user.role == 'siswa':
+    if request.user.role == "siswa":
         if not siswa or perencanaan.siswa_id != siswa.id:
             messages.error(request, "Anda hanya dapat mengubah perencanaan milik sendiri.")
             return redirect("perencanaan:list")
-            
-    if request.user.role not in ['siswa', 'admin']:
+
+    if request.user.role not in ["siswa", "admin"]:
         messages.error(request, "Anda tidak memiliki akses untuk mengubah perencanaan.")
         return redirect("perencanaan:list")
 
-    show_siswa = request.user.role == 'admin'
+    show_siswa = request.user.role == "admin"
 
     if request.method == "POST":
-        form = PerencanaanForm(request.POST, instance=perencanaan, show_siswa=show_siswa)
+        form = PerencanaanForm(
+            request.POST,
+            instance=perencanaan,
+            show_siswa=show_siswa,
+            siswa=siswa,
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Perencanaan berhasil diperbarui.")
             return redirect("perencanaan:list")
     else:
-        form = PerencanaanForm(instance=perencanaan, show_siswa=show_siswa)
-    
+        form = PerencanaanForm(instance=perencanaan, show_siswa=show_siswa, siswa=siswa)
+
     context = {
         "page_title": "Edit Perencanaan",
         "active_menu": "perencanaan",
@@ -125,8 +235,10 @@ def perencanaan_update(request, pk):
     }
     return render(request, "perencanaan/perencanaan_form.html", context)
 
+
 @login_required
 def perencanaan_delete(request, pk):
+
     perencanaan = get_object_or_404(Perencanaan, pk=pk)
     siswa = getattr(request.user, "siswa", None)
     
