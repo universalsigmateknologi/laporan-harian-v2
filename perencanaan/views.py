@@ -13,14 +13,12 @@ from .services import (
 from utils.utils import role_required
 
 
-@login_required
+@role_required(["siswa", "admin"])
 def kategori_list(request):
-    siswa = getattr(request.user, "siswa", None)
-    if request.user.role != "siswa" or not siswa:
-        messages.error(request, "Anda tidak memiliki akses.")
-        return redirect("perencanaan:kategori_list")
-
-    kategori_qs = KategoriPerencanaan.objects.filter(siswa=siswa).order_by("nama")
+    if request.user.role == "admin":
+        kategori_qs = KategoriPerencanaan.objects.all().order_by("nama")
+    else:
+        kategori_qs = KategoriPerencanaan.objects.filter(siswa=request.user.siswa).order_by("nama")
     return render(
         request,
         "perencanaan/kategori_list.html",
