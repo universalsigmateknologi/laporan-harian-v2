@@ -40,31 +40,60 @@ class Client(models.Model):
     def __str__(self):
         return f"{self.name} ({self.instansi})"
 
+class Program(models.Model):
+    kategori = models.ForeignKey(
+        KategoriPerencanaan,
+        on_delete=models.PROTECT,
+        related_name="program_set",
+        verbose_name="Kategori Perencanaan",
+    )
+    nama = models.CharField(max_length=255, verbose_name="Nama Program")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Program"
+        verbose_name_plural = "Program"
+        constraints = [
+            models.UniqueConstraint(fields=["kategori", "nama"], name="unique_program_per_kategori"),
+        ]
+        ordering = ["nama"]
+
+    def __str__(self):
+        return self.nama
+
+
 class Perencanaan(models.Model):
     kategori = models.ForeignKey(
-        KategoriPerencanaan, 
-        on_delete=models.PROTECT, 
+        KategoriPerencanaan,
+        on_delete=models.PROTECT,
         related_name="perencanaan_set",
-        verbose_name="Kategori Perencanaan"
+        verbose_name="Kategori Perencanaan",
     )
     siswa = models.ForeignKey(
-        Siswa, 
-        on_delete=models.CASCADE, 
+        Siswa,
+        on_delete=models.CASCADE,
         related_name="perencanaan_set",
-        verbose_name="Siswa"
+        verbose_name="Siswa",
     )
-    program = models.TextField(verbose_name="KategoriPerencanaanProgram")
+    program = models.ForeignKey(
+        Program,
+        on_delete=models.PROTECT,
+        related_name="perencanaan_set",
+        verbose_name="Program",
+    )
     kegiatan = models.TextField(verbose_name="Kegiatan")
     indikator_pencapaian = models.TextField(verbose_name="Indikator Pencapaian")
     client = models.ForeignKey(
-        Client, 
-        on_delete=models.PROTECT, 
+        Client,
+        on_delete=models.PROTECT,
         related_name="perencanaan_set",
-        verbose_name="Client / Sasaran"
+        verbose_name="Client / Sasaran",
     )
     waktu = models.DateField(verbose_name="Waktu / Tanggal")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     class Meta:
         verbose_name = "Perencanaan"
@@ -72,4 +101,4 @@ class Perencanaan(models.Model):
         ordering = ["-waktu", "-created_at"]
 
     def __str__(self):
-        return f"{self.program} - {self.siswa.nama_lengkap}"
+        return f"{self.program.nama} - {self.siswa.nama_lengkap}"

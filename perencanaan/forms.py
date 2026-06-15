@@ -1,5 +1,5 @@
 from django import forms
-from .models import Perencanaan, Client, KategoriPerencanaan
+from .models import Perencanaan, Client, KategoriPerencanaan, Program
 
 
 class PerencanaanForm(forms.ModelForm):
@@ -36,10 +36,9 @@ class PerencanaanForm(forms.ModelForm):
                     "class": "form-input w-full rounded-xl border border-navy-200 px-4 py-3 text-sm text-navy-900 focus:outline-none bg-white"
                 }
             ),
-            "program": forms.Textarea(
+            "program": forms.Select(
                 attrs={
-                    "rows": 3,
-                    "class": "form-input w-full rounded-2xl border border-navy-200 px-4 py-3 text-sm text-navy-900 focus:outline-none",
+                    "class": "form-input w-full rounded-xl border border-navy-200 px-4 py-3 text-sm text-navy-900 focus:outline-none bg-white"
                 }
             ),
             "kegiatan": forms.Textarea(
@@ -67,6 +66,17 @@ class PerencanaanForm(forms.ModelForm):
         # Filter dropdown kategori agar hanya kategori milik siswa yang sedang login.
         if siswa is not None and "kategori" in self.fields:
             self.fields["kategori"].queryset = KategoriPerencanaan.objects.filter(siswa=siswa)
+
+        # Filter dropdown program agar hanya program dari kategori yang dipilih.
+        kategori_id = None
+        if self.is_bound:
+            kategori_id = self.data.get("kategori")
+        elif self.instance and getattr(self.instance, "kategori_id", None):
+            kategori_id = self.instance.kategori_id
+
+        if kategori_id and "program" in self.fields:
+            self.fields["program"].queryset = Program.objects.filter(kategori_id=kategori_id).order_by("nama")
+
 
 
 class KategoriPerencanaanForm(forms.ModelForm):
