@@ -13,7 +13,7 @@ from .services import (
 from utils.utils import role_required
 
 
-@role_required(["siswa", "admin"])
+@role_required(["siswa"])
 def kategori_list(request):
     if request.user.role == "admin":
         kategori_qs = KategoriPerencanaan.objects.all().order_by("nama")
@@ -30,13 +30,9 @@ def kategori_list(request):
     )
 
 
-@login_required
+@role_required(["siswa"])
 def kategori_create(request):
     siswa = getattr(request.user, "siswa", None)
-    if request.user.role != "siswa" or not siswa:
-        messages.error(request, "Anda tidak memiliki akses.")
-        return redirect("perencanaan:kategori_list")
-
     if request.method == "POST":
         form = KategoriPerencanaanForm(request.POST)
         if form.is_valid():
@@ -59,12 +55,9 @@ def kategori_create(request):
     )
 
 
-@login_required
+@role_required(["siswa"])
 def kategori_update(request, pk):
     siswa = getattr(request.user, "siswa", None)
-    if request.user.role != "siswa" or not siswa:
-        messages.error(request, "Anda tidak memiliki akses.")
-        return redirect("perencanaan:kategori_list")
 
     kategori = get_object_or_404(KategoriPerencanaan, pk=pk, siswa=siswa)
 
@@ -88,12 +81,9 @@ def kategori_update(request, pk):
     )
 
 
-@login_required
+@role_required(["siswa"])
 def kategori_delete(request, pk):
     siswa = getattr(request.user, "siswa", None)
-    if request.user.role != "siswa" or not siswa:
-        messages.error(request, "Anda tidak memiliki akses.")
-        return redirect("perencanaan:kategori_list")
 
     kategori = get_object_or_404(KategoriPerencanaan, pk=pk, siswa=siswa)
 

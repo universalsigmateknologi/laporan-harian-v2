@@ -1,16 +1,21 @@
 from .base import *
+import os
 
 DEBUG = False
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
-ALLOWED_HOSTS = ['laporan-medeska.smknj.sch.id', 'www.laporan-medeska.smknj.sch.id']
+ALLOWED_HOSTS = ['domainmu.com', 'www.domainmu.com']
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'smkf7622_laporan_harian_medeska',       # Nama database di cPanel
-        'USER': 'smkf7622_peaceman',       # Username database di cPanel
-        'PASSWORD': 'Bakso@123#123',    # Password user database
-        'HOST': 'localhost',               # Tetap localhost karena Django & MySQL berada di server cPanel yang sama
-        'PORT': '3306',                    # Port default MySQL
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
