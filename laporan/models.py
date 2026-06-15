@@ -37,7 +37,7 @@ class LaporanHarian(models.Model):
         verbose_name="Status",
     )
     tanggal = models.DateField(verbose_name="Tanggal Kegiatan")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Dibuat")
+    created_at = models.DateTimeField(blank=True, null=True, verbose_name="Dibuat")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Diperbarui")
 
     class Meta:
@@ -58,6 +58,8 @@ class LaporanHarian(models.Model):
         return self.foto_bukti.count()
 
     def save(self, *args, **kwargs):
+        if not self.created_at:
+            self.created_at = timezone.now()
         # Ensure `tanggal` is populated (historic migrations expect this column)
         if not getattr(self, "tanggal", None):
             # Prefer created_at date if already set, otherwise use now().date()

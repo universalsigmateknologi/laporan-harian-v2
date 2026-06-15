@@ -74,11 +74,11 @@ class LaporanHarianAdmin(admin.ModelAdmin):
             "Timestamp",
             {
                 "fields": ("created_at", "updated_at"),
-                "classes": ("collapse",),
+                # "classes": ("collapse",),
             },
         ),
     )
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("updated_at",)
 
     @admin.display(description="Nama Siswa", ordering="siswa__nama_lengkap")
     def get_nama_siswa(self, obj):
