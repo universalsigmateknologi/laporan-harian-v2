@@ -67,15 +67,10 @@ class PerencanaanForm(forms.ModelForm):
         if siswa is not None and "kategori" in self.fields:
             self.fields["kategori"].queryset = KategoriPerencanaan.objects.filter(siswa=siswa)
 
-        # Filter dropdown program agar hanya program dari kategori yang dipilih.
-        kategori_id = None
-        if self.is_bound:
-            kategori_id = self.data.get("kategori")
-        elif self.instance and getattr(self.instance, "kategori_id", None):
-            kategori_id = self.instance.kategori_id
+        # dropdown program (tanpa filter kategori, karena Program tidak lagi terikat kategori)
+        if "program" in self.fields:
+            self.fields["program"].queryset = Program.objects.all().order_by("nama")
 
-        if kategori_id and "program" in self.fields:
-            self.fields["program"].queryset = Program.objects.filter(kategori_id=kategori_id).order_by("nama")
 
 
 

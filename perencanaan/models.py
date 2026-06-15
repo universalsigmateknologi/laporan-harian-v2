@@ -40,27 +40,38 @@ class Client(models.Model):
     def __str__(self):
         return f"{self.name} ({self.instansi})"
 
+from django.conf import settings
+
+
 class Program(models.Model):
-    kategori = models.ForeignKey(
-        KategoriPerencanaan,
-        on_delete=models.PROTECT,
+    # Pemilik program (akun siswa) supaya bisa diketahui siapa yang melakukan post
+    siswa_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
         related_name="program_set",
-        verbose_name="Kategori Perencanaan",
+        verbose_name="Siswa (User)",
+        null=True,
+        blank=True,
+        limit_choices_to={"role": "siswa"},
     )
+
     nama = models.CharField(max_length=255, verbose_name="Nama Program")
+    deskripsi = models.TextField(blank=True, verbose_name="Deskripsi")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     class Meta:
         verbose_name = "Program"
         verbose_name_plural = "Program"
         constraints = [
-            models.UniqueConstraint(fields=["kategori", "nama"], name="unique_program_per_kategori"),
+            models.UniqueConstraint(fields=["nama"], name="unique_program_nama"),
         ]
         ordering = ["nama"]
 
     def __str__(self):
         return self.nama
+
 
 
 class Perencanaan(models.Model):
