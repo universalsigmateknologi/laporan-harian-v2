@@ -6,7 +6,7 @@ load_dotenv()
 DEBUG = False
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
-ALLOWED_HOSTS = ['domainmu.com', 'www.domainmu.com']
+ALLOWED_HOSTS = ['laporan-medeska.smknj.sch.id', 'www.laporan-medeska.smknj.sch.id']
 
 DATABASES = {
     'default': {
