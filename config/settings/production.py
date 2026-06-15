@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()   
 
-DEBUG = False
+DEBUG = True
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 ALLOWED_HOSTS = ['laporan-medeska.smknj.sch.id', 'www.laporan-medeska.smknj.sch.id']
