@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import Perencanaan, Client, KategoriPerencanaan
-from .forms import PerencanaanForm, KategoriPerencanaanForm
+from .models import Perencanaan, Client, KategoriPerencanaan, Program
+
+from .forms import PerencanaanForm, KategoriPerencanaanForm, ProgramForm
 from .services import (
 
     get_base_queryset, apply_filters, get_perencanaan_stats, 
@@ -13,21 +14,35 @@ from .services import (
 from utils.utils import role_required
 
 
+
 @role_required(["siswa"])
 def kategori_list(request):
+    q = request.GET.get("q", "").strip()
+
     if request.user.role == "admin":
-        kategori_qs = KategoriPerencanaan.objects.all().order_by("nama")
+        kategori_qs = KategoriPerencanaan.objects.all()
     else:
-        kategori_qs = KategoriPerencanaan.objects.filter(siswa=request.user.siswa).order_by("nama")
-    return render(
-        request,
-        "perencanaan/kategori_list.html",
-        {
-            "page_title": "Kategori Perencanaan",
-            "active_menu": "kategori_perencanaan",
-            "page_obj": kategori_qs,
-        },
-    )
+        kategori_qs = KategoriPerencanaan.objects.filter(siswa=request.user.siswa)
+
+    if q:
+        kategori_qs = kategori_qs.filter(
+            Q(nama__icontains=q) | Q(keterangan__icontains=q)
+        )
+
+    kategori_qs = kategori_qs.order_by("nama")
+
+    paginator = Paginator(kategori_qs, PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    context = {
+        "page_title": "Kategori Perencanaan",
+        "active_menu": "kategori_perencanaan",
+        "page_obj": page_obj,
+        "filters": {"q": q},
+        "has_active_filters": bool(q),
+    }
+    return render(request, "perencanaan/kategori_list.html", context)
+
 
 
 @role_required(["siswa"])
@@ -103,7 +118,107 @@ def kategori_delete(request, pk):
     )
 
 
+@role_required(["siswa"])
+def program_list(request):
+    q = request.GET.get("q", "").strip()
+
+    siswa = getattr(request.user, "siswa", None)
+    if not siswa:
+        messages.error(request, "Profil siswa tidak ditemukan.")
+        return redirect("perencanaan:list")
+
+    program_qs = Program.objects.filter(siswa_user=request.user)
+    if q:
+        program_qs = program_qs.filter(Q(nama__icontains=q) | Q(deskripsi__icontains=q))
+
+    program_qs = program_qs.order_by("nama")
+
+    paginator = Paginator(program_qs, PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "perencanaan/program_list.html",
+        {
+            "page_title": "Program",
+            "active_menu": "program",
+            "page_obj": page_obj,
+            "filters": {"q": q},
+            "has_active_filters": bool(q),
+        },
+    )
+
+
+@role_required(["siswa"])
+def program_create(request):
+    if request.method == "POST":
+        form = ProgramForm(request.POST)
+        if form.is_valid():
+            program = form.save(commit=False)
+            program.siswa_user = request.user
+            program.save()
+            messages.success(request, "Program berhasil ditambahkan.")
+            return redirect("perencanaan:program_list")
+    else:
+        form = ProgramForm()
+
+    return render(
+        request,
+        "perencanaan/program_form.html",
+        {
+            "page_title": "Tambah Program",
+            "active_menu": "program",
+            "form": form,
+        },
+    )
+
+
+@role_required(["siswa"])
+def program_update(request, pk):
+    program = get_object_or_404(Program, pk=pk, siswa_user=request.user)
+
+    if request.method == "POST":
+        form = ProgramForm(request.POST, instance=program)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Program berhasil diperbarui.")
+            return redirect("perencanaan:program_list")
+    else:
+        form = ProgramForm(instance=program)
+
+    return render(
+        request,
+        "perencanaan/program_form.html",
+        {
+            "page_title": "Edit Program",
+            "active_menu": "program",
+            "form": form,
+        },
+    )
+
+
+@role_required(["siswa"])
+def program_delete(request, pk):
+    program = get_object_or_404(Program, pk=pk, siswa_user=request.user)
+
+    if request.method == "POST":
+        program.delete()
+        messages.success(request, "Program berhasil dihapus.")
+        return redirect("perencanaan:program_list")
+
+    return render(
+        request,
+        "perencanaan/program_confirm_delete.html",
+        {
+            "program": program,
+            "page_title": "Hapus Program",
+            "active_menu": "program",
+        },
+    )
+
+
 def _parse_filters(request):
+
     return {
         "q": request.GET.get("q", "").strip(),
         "start_date": request.GET.get("start_date", "").strip(),

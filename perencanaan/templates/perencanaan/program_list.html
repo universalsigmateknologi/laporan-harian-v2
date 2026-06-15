@@ -2,7 +2,6 @@
 {% load static %}
 {% load perencanaan_extras %}
 
-
 {% block title %}{{ page_title }} — MEDESKA{% endblock %}
 
 {% block extra_css %}
@@ -15,18 +14,18 @@
 {% block topbar %}
 <header class="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100 flex items-center justify-between px-4 lg:px-6 shrink-0">
   <div class="flex items-center gap-3">
-    <a href="{% url 'perencanaan:kategori_list' %}" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
+    <a href="{% url 'perencanaan:list' %}" class="w-9 h-9 rounded-lg bg-navy-50 hover:bg-navy-100 flex items-center justify-center transition-colors">
       <i data-lucide="arrow-left" class="w-4 h-4 text-navy-700"></i>
     </a>
     <div>
-      <h1 class="text-base font-semibold text-navy-900 leading-tight">{{ page_title }}</h1>
-      <p class="text-[12px] text-navy-400 leading-tight hidden sm:block">Kelola kategori perencanaan Anda.</p>
+      <h1 class="text-base font-semibold text-navy-900 leading-tight">Program</h1>
+      <p class="text-[12px] text-navy-400 leading-tight hidden sm:block">Kelola program perencanaan Anda.</p>
     </div>
   </div>
 
-  <a href="{% url 'perencanaan:kategori_create' %}" class="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+  <a href="{% url 'perencanaan:program_create' %}" class="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
     <i data-lucide="plus" class="w-4 h-4"></i>
-    Tambah Kategori
+    Tambah Program
   </a>
 </header>
 {% endblock topbar %}
@@ -44,20 +43,20 @@
     <div class="p-4 lg:p-5 border-b border-navy-100">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p class="text-sm text-navy-600">
-          Total kategori: <span class="font-semibold text-navy-900">{{ page_obj.paginator.count|default:0 }}</span>
+          Total program: <span class="font-semibold text-navy-900">{{ page_obj.paginator.count|default:0 }}</span>
         </p>
 
         <form method="get" class="w-full sm:w-auto">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
             <div class="flex items-center bg-navy-50 rounded-lg px-3 py-1.5 gap-2 w-full sm:w-64">
               <i data-lucide="search" class="w-4 h-4 text-navy-400 shrink-0"></i>
-              <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari kategori..." class="bg-transparent text-sm text-navy-900 placeholder-navy-400 outline-none w-full">
+              <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari program..." class="bg-transparent text-sm text-navy-900 placeholder-navy-400 outline-none w-full">
             </div>
             <button type="submit" class="bg-navy-800 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-navy-900 transition-colors">
               Filter
             </button>
             {% if has_active_filters %}
-              <a href="{% url 'perencanaan:kategori_list' %}" class="text-red-500 text-sm font-medium hover:text-red-600 px-1">Reset</a>
+              <a href="{% url 'perencanaan:program_list' %}" class="text-red-500 text-sm font-medium hover:text-red-600 px-1">Reset</a>
             {% endif %}
           </div>
         </form>
@@ -69,7 +68,7 @@
         <thead>
           <tr class="border-b border-navy-100 bg-navy-50/60">
             <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Nama</th>
-            <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Keterangan</th>
+            <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500">Deskripsi</th>
             <th class="text-left px-4 lg:px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-navy-500 w-24">Aksi</th>
           </tr>
         </thead>
@@ -80,14 +79,14 @@
               <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-navy-50 text-navy-700 text-[12px]">{{ item.nama }}</span>
             </td>
             <td class="px-4 lg:px-5 py-4">
-              <p class="text-navy-700 line-clamp-2">{{ item.keterangan|default:"-" }}</p>
+              <p class="text-navy-700 line-clamp-2">{{ item.deskripsi|default:"-" }}</p>
             </td>
             <td class="px-4 lg:px-5 py-4">
               <div class="flex items-center gap-2">
-                <a href="{% url 'perencanaan:kategori_update' item.pk %}" class="p-1.5 rounded-md hover:bg-navy-50 text-navy-400 hover:text-navy-600 transition-colors">
+                <a href="{% url 'perencanaan:program_update' item.pk %}" class="p-1.5 rounded-md hover:bg-navy-50 text-navy-400 hover:text-navy-600 transition-colors">
                   <i data-lucide="edit-2" class="w-4 h-4"></i>
                 </a>
-                <a href="{% url 'perencanaan:kategori_delete' item.pk %}" class="p-1.5 rounded-md hover:bg-red-50 text-navy-400 hover:text-red-600 transition-colors">
+                <a href="{% url 'perencanaan:program_delete' item.pk %}" class="p-1.5 rounded-md hover:bg-red-50 text-navy-400 hover:text-red-600 transition-colors">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </a>
               </div>
@@ -96,9 +95,9 @@
           {% empty %}
           <tr>
             <td colspan="3" class="px-4 lg:px-5 py-10 text-center">
-              <p class="text-navy-700 font-medium text-sm">Tidak ada kategori ditemukan.</p>
-              <a href="{% url 'perencanaan:kategori_create' %}" class="inline-block mt-4 px-4 py-2 bg-navy-800 text-white text-sm font-medium rounded-lg hover:bg-navy-900 transition-colors">
-                Tambah kategori
+              <p class="text-navy-700 font-medium text-sm">Tidak ada program ditemukan.</p>
+              <a href="{% url 'perencanaan:program_create' %}" class="inline-block mt-4 px-4 py-2 bg-navy-800 text-white text-sm font-medium rounded-lg hover:bg-navy-900 transition-colors">
+                Tambah program
               </a>
             </td>
           </tr>
@@ -141,5 +140,4 @@
   }
 </script>
 {% endblock %}
-
 

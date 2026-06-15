@@ -15,5 +15,12 @@ urlpatterns = [
     path("kategori/create/", views.kategori_create, name="kategori_create"),
     path("kategori/<int:pk>/update/", views.kategori_update, name="kategori_update"),
     path("kategori/<int:pk>/delete/", views.kategori_delete, name="kategori_delete"),
+
+    # Program
+    path("program/", views.program_list, name="program_list"),
+    path("program/create/", views.program_create, name="program_create"),
+    path("program/<int:pk>/update/", views.program_update, name="program_update"),
+    path("program/<int:pk>/delete/", views.program_delete, name="program_delete"),
 ]
+
 

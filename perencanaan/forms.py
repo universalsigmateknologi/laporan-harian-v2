@@ -92,3 +92,23 @@ class KategoriPerencanaanForm(forms.ModelForm):
             ),
         }
 
+
+class ProgramForm(forms.ModelForm):
+    class Meta:
+        model = Program
+        fields = ["nama", "deskripsi"]
+        widgets = {
+            "nama": forms.TextInput(
+                attrs={
+                    "class": "form-input w-full rounded-xl border border-navy-200 px-4 py-3 text-sm text-navy-900 focus:outline-none",
+                }
+            ),
+            "deskripsi": forms.Textarea(
+                attrs={
+                    "rows": 5,
+                    "class": "form-input w-full rounded-2xl border border-navy-200 px-4 py-3 text-sm text-navy-900 focus:outline-none",
+                }
+            ),
+        }
+
+
