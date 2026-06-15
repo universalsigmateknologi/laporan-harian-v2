@@ -28,13 +28,7 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-6">
-  {% if messages %}
-  <div class="space-y-2">
-    {% for message in messages %}
-    <div class="rounded-2xl border px-4 py-3 text-sm {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
+
 
   <form id="programForm" method="post" class="bg-white rounded-2xl border border-navy-100 p-6 space-y-6">
     {% csrf_token %}

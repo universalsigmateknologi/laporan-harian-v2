@@ -46,11 +46,125 @@
      {% block modal %}
         
      {% endblock modal %}
-     {% block extra_js %}{% endblock extra_js %}
-     <script>
-       document.addEventListener('DOMContentLoaded', function () {
-         if (typeof lucide !== 'undefined') lucide.createIcons();
-       });
-     </script>
+
+    <!-- ============== TOAST + MODAL MESSAGES (GLOBAL) ============== -->
+    <div id="globalToastWrap" class="fixed z-[60] top-4 right-4 space-y-3 pointer-events-none"></div>
+
+    <div id="globalMessageModal" class="fixed inset-0 z-[70] hidden">
+      <div class="absolute inset-0 bg-black/40" id="globalMessageModalBackdrop" data-modal-close></div>
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg">
+        <div class="bg-white rounded-2xl border border-navy-100 overflow-hidden shadow-xl">
+          <div class="p-4 border-b border-navy-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="message-square" class="w-5 h-5 text-navy-700"></i>
+              <h3 class="text-sm font-semibold text-navy-900">Notifikasi</h3>
+            </div>
+            <button type="button" class="p-2 rounded-lg hover:bg-navy-50" data-modal-close aria-label="Tutup">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <div class="p-4">
+            <p id="globalMessageModalBody" class="text-sm text-navy-800 leading-relaxed"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% block extra_js %}{% endblock extra_js %}
+
+    {# Render Django messages once; JS akan membaca elemen ini #}
+    {% if messages %}
+      <div id="djangoMessages" class="hidden">
+        {% for message in messages %}
+          <div
+            class="django-message"
+            data-message-tags="{{ message.tags }}"
+            data-message-text="{{ message|escapejs }}"
+          ></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        const toastWrap = document.getElementById('globalToastWrap');
+        const modal = document.getElementById('globalMessageModal');
+        const modalBody = document.getElementById('globalMessageModalBody');
+        const backdrop = document.getElementById('globalMessageModalBackdrop');
+
+        const messagesRoot = document.getElementById('djangoMessages');
+        if (!messagesRoot || !toastWrap) return;
+
+        const msgEls = Array.from(messagesRoot.querySelectorAll('.django-message'));
+        if (!msgEls.length) return;
+
+        // modal berisi pesan terakhir
+        const lastMsg = msgEls[msgEls.length - 1];
+        const lastText = lastMsg.getAttribute('data-message-text') || '';
+        const lastTags = (lastMsg.getAttribute('data-message-tags') || '').toLowerCase();
+
+
+
+        modalBody.classList.remove('bg-red-50','text-red-800','border-red-200','bg-emerald-50','text-emerald-800','border-emerald-200','bg-amber-50','text-amber-800','border-amber-200','bg-navy-50','text-navy-800','border-navy-100');
+        modalBody.classList.add('bg-transparent','text-sm','text-navy-800','leading-relaxed');
+        modalBody.textContent = lastText;
+
+        modal.classList.remove('hidden');
+
+        // close modal
+        const closeButtons = modal.querySelectorAll('[data-modal-close]');
+        closeButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+          });
+        });
+        if (backdrop) {
+          backdrop.addEventListener('click', () => modal.classList.add('hidden'));
+        }
+
+        const tagToStyles = (tags) => {
+          const t = (tags || '').toLowerCase();
+          if (t.includes('error')) return { bg: 'bg-red-600', ring: 'ring-red-400/30', icon: 'alert-triangle', text: 'text-white' };
+          if (t.includes('success')) return { bg: 'bg-emerald-600', ring: 'ring-emerald-400/30', icon: 'check-circle-2', text: 'text-white' };
+          if (t.includes('warning')) return { bg: 'bg-amber-600', ring: 'ring-amber-400/30', icon: 'alert-circle', text: 'text-white' };
+          return { bg: 'bg-navy-800', ring: 'ring-navy-400/30', icon: 'info', text: 'text-white' };
+        };
+
+        msgEls.forEach((el, idx) => {
+          const text = el.getAttribute('data-message-text') || '';
+          const tags = el.getAttribute('data-message-tags') || '';
+          const st = tagToStyles(tags);
+
+          const toast = document.createElement('div');
+          toast.className = `pointer-events-none flex items-start gap-3 rounded-2xl border border-navy-200 shadow-sm ${st.ring} ${st.bg} px-4 py-3`;
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-8px)';
+          toast.style.transition = 'opacity 200ms ease, transform 200ms ease';
+          toast.innerHTML = `
+            <div class="mt-0.5">
+              <i data-lucide="${st.icon}" class="w-5 h-5 ${st.text}"></i>
+            </div>
+            <div class="flex-1 ${st.text} text-sm leading-relaxed">${text}</div>
+          `;
+
+          toastWrap.appendChild(toast);
+
+          // animate in
+          setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+          }, 80 + idx * 80);
+
+          // animate out
+          setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            setTimeout(() => toast.remove(), 250);
+          }, 3200 + idx * 250);
+        });
+      });
+    </script>
 </body>
 </html>

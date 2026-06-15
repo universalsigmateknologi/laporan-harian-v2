@@ -26,13 +26,7 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto space-y-6">
-  {% if messages %}
-  <div class="space-y-2">
-    {% for message in messages %}
-      <div class="rounded-2xl border px-4 py-3 text-sm {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
+
 
   <div class="bg-white rounded-2xl border border-navy-100 p-6 space-y-4">
     <div>
