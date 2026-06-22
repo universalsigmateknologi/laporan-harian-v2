@@ -98,10 +98,14 @@
               <div class="dropdown-item p-3 hover:bg-navy-50 rounded-xl cursor-pointer transition-colors text-left" 
                    data-program="{{ p.program.nama }}" 
                    data-kegiatan="{{ p.kegiatan }}" 
+                   data-kategori="{{ p.kategori.nama }}"
                    data-waktu="{{ p.waktu|date:'d M Y' }}"
                    data-value="[{{ p.program.nama }}] {{ p.kegiatan }}">
                 <div class="flex justify-between items-start gap-2 mb-1">
-                  <span class="text-xs font-bold text-navy-900">{{ p.program.nama }}</span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-1.5 py-0.5 rounded bg-navy-100 text-[10px] font-semibold text-navy-800">{{ p.kategori.nama }}</span>
+                    <span class="text-xs font-bold text-navy-900">{{ p.program.nama }}</span>
+                  </div>
                   <span class="text-[10px] text-navy-400 font-medium whitespace-nowrap">{{ p.waktu|date:"d M Y" }}</span>
                 </div>
                 <div class="text-xs text-navy-600 line-clamp-2">{{ p.kegiatan }}</div>
@@ -208,12 +212,16 @@ document.addEventListener('DOMContentLoaded', function() {
   function selectItem(item) {
     const val = item.getAttribute('data-value');
     const program = item.getAttribute('data-program');
+    const kategori = item.getAttribute('data-kategori');
     const waktu = item.getAttribute('data-waktu');
     
     selectedPlaceholder.innerHTML = `
       <div class="flex flex-col">
-        <span class="text-xs font-bold text-navy-900">${program}</span>
-        <span class="text-[10px] text-navy-500">${waktu}</span>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="px-1.5 py-0.5 rounded bg-navy-100 text-[9px] font-semibold text-navy-800">${kategori}</span>
+          <span class="text-xs font-bold text-navy-900">${program}</span>
+        </div>
+        <span class="text-[10px] text-navy-500 mt-0.5">${waktu}</span>
       </div>
     `;
     selectedPlaceholder.classList.remove('text-navy-400');
@@ -272,9 +280,10 @@ document.addEventListener('DOMContentLoaded', function() {
     dropdownItems.forEach(item => {
       const program = item.getAttribute('data-program').toLowerCase();
       const kegiatan = item.getAttribute('data-kegiatan').toLowerCase();
+      const kategori = item.getAttribute('data-kategori').toLowerCase();
       const waktu = item.getAttribute('data-waktu').toLowerCase();
       
-      if (program.includes(query) || kegiatan.includes(query) || waktu.includes(query)) {
+      if (program.includes(query) || kegiatan.includes(query) || kategori.includes(query) || waktu.includes(query)) {
         item.style.display = 'block';
       } else {
         item.style.display = 'none';

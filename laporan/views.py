@@ -116,7 +116,7 @@ def laporan_post(request):
             "status": status,
         })
 
-    perencanaan_list = Perencanaan.objects.filter(siswa=siswa).select_related("program")
+    perencanaan_list = Perencanaan.objects.filter(siswa=siswa).select_related("program", "kategori")
 
     context = {
         "page_title": "Buat Laporan Baru",
@@ -178,7 +178,7 @@ def laporan_edit(request, pk):
             "status": status,
         })
 
-    perencanaan_list = Perencanaan.objects.filter(siswa=laporan.siswa).select_related("program")
+    perencanaan_list = Perencanaan.objects.filter(siswa=laporan.siswa).select_related("program", "kategori")
 
     context = {
         "page_title": "Edit Laporan",
