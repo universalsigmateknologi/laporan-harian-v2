@@ -24,6 +24,7 @@ from laporan.services.rekap import (
     has_active_filters,
     user_initials,
 )
+from perencanaan.models import Perencanaan
 from siswa.models import Siswa
 from utils.utils import role_required
 
@@ -115,6 +116,8 @@ def laporan_post(request):
             "status": status,
         })
 
+    perencanaan_list = Perencanaan.objects.filter(siswa=siswa).select_related("program")
+
     context = {
         "page_title": "Buat Laporan Baru",
         "active_menu": "rekap_harian",
@@ -126,6 +129,7 @@ def laporan_post(request):
         "form_action": reverse("laporan:laporan_post"),
         "submit_label": "Kirim Laporan",
         "is_edit": False,
+        "perencanaan_list": perencanaan_list,
     }
     return render(request, "laporan/laporan_post.html", context)
 
@@ -174,6 +178,8 @@ def laporan_edit(request, pk):
             "status": status,
         })
 
+    perencanaan_list = Perencanaan.objects.filter(siswa=laporan.siswa).select_related("program")
+
     context = {
         "page_title": "Edit Laporan",
         "active_menu": "rekap_harian",
@@ -186,6 +192,7 @@ def laporan_edit(request, pk):
         "form_action": reverse("laporan:laporan_edit", args=[laporan.pk]),
         "submit_label": "Simpan Perubahan",
         "is_edit": True,
+        "perencanaan_list": perencanaan_list,
     }
     return render(request, "laporan/laporan_post.html", context)
 
