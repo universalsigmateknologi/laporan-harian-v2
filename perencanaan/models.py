@@ -102,6 +102,7 @@ class Perencanaan(models.Model):
         verbose_name="Client / Sasaran",
     )
     waktu = models.DateField(verbose_name="Waktu / Tanggal")
+    is_completed = models.BooleanField(default=False, verbose_name="Selesai")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

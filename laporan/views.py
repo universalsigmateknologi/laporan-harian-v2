@@ -75,6 +75,7 @@ def laporan_post(request):
     form_data = {
         "uraian_pekerjaan": request.POST.get("uraian_pekerjaan", "") if request.method == "POST" else "",
         "hasil_progress": request.POST.get("hasil_progress", "") if request.method == "POST" else "",
+        "perencanaan_id": request.POST.get("perencanaan_id", "") if request.method == "POST" else "",
         "status": LaporanHarian.Status.DALAM_PROSES,
     }
     errors = {}
@@ -95,6 +96,8 @@ def laporan_post(request):
         if siswa and LaporanHarian.objects.filter(siswa=siswa, tanggal=today).exists():
             errors["duplicate"] = "Anda sudah membuat laporan hari ini."
 
+        perencanaan_id = request.POST.get("perencanaan_id", "").strip()
+
         if not errors:
             laporan = LaporanHarian.objects.create(
                 siswa=siswa,
@@ -107,6 +110,16 @@ def laporan_post(request):
             for foto in foto_files:
                 FotoBukti.objects.create(laporan=laporan, foto=foto)
 
+            if perencanaan_id:
+                perencanaan_obj = Perencanaan.objects.filter(
+                    pk=perencanaan_id,
+                    siswa=siswa,
+                    is_completed=False,
+                ).first()
+                if perencanaan_obj:
+                    perencanaan_obj.is_completed = True
+                    perencanaan_obj.save(update_fields=["is_completed"])
+
             messages.success(request, "Laporan berhasil dikirim.")
             return redirect("laporan:rekap_harian")
 
@@ -116,7 +129,7 @@ def laporan_post(request):
             "status": status,
         })
 
-    perencanaan_list = Perencanaan.objects.filter(siswa=siswa).select_related("program", "kategori")
+    perencanaan_list = Perencanaan.objects.filter(siswa=siswa, is_completed=False).select_related("program", "kategori")
 
     context = {
         "page_title": "Buat Laporan Baru",
@@ -178,7 +191,7 @@ def laporan_edit(request, pk):
             "status": status,
         })
 
-    perencanaan_list = Perencanaan.objects.filter(siswa=laporan.siswa).select_related("program", "kategori")
+    perencanaan_list = Perencanaan.objects.filter(siswa=laporan.siswa, is_completed=False).select_related("program", "kategori")
 
     context = {
         "page_title": "Edit Laporan",

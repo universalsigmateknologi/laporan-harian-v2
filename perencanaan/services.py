@@ -18,6 +18,7 @@ def apply_filters(
     start_date: str = "",
     end_date: str = "",
     jurusan: str = "",
+    completed: str = "",
     order: str = "desc",
 ) -> QuerySet:
     if q:
@@ -43,6 +44,11 @@ def apply_filters(
     if jurusan and jurusan != "semua":
         queryset = queryset.filter(siswa__jurusan__kode__iexact=jurusan)
         
+    if completed == "true":
+        queryset = queryset.filter(is_completed=True)
+    elif completed == "false":
+        queryset = queryset.filter(is_completed=False)
+
     if order == "asc":
         queryset = queryset.order_by("waktu", "created_at")
     else:
@@ -70,12 +76,15 @@ def get_filter_labels(filters: dict) -> dict:
         labels["end_date"] = filters["end_date"]
     if filters.get("q"):
         labels["q"] = filters["q"]
+    if filters.get("completed") and filters["completed"] != "semua":
+        labels["completed"] = "Selesai" if filters["completed"] == "true" else "Belum Selesai"
     return labels
 
 def has_active_filters(filters: dict) -> bool:
     return bool(
         filters.get("q")
         or (filters.get("jurusan") and filters["jurusan"] != "semua")
+        or (filters.get("completed") and filters["completed"] != "semua")
         or filters.get("start_date")
         or filters.get("end_date")
     )

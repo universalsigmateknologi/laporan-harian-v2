@@ -96,6 +96,7 @@
             <div class="overflow-y-auto flex-1 space-y-1 pr-1" id="dropdownItemsContainer">
               {% for p in perencanaan_list %}
               <div class="dropdown-item p-3 hover:bg-navy-50 rounded-xl cursor-pointer transition-colors text-left" 
+                   data-id="{{ p.pk }}"
                    data-program="{{ p.program.nama }}" 
                    data-kegiatan="{{ p.kegiatan }}" 
                    data-kategori="{{ p.kategori.nama }}"
@@ -118,6 +119,7 @@
         </div>
 
         <!-- Manual Mode Textarea -->
+        <input type="hidden" id="selectedPerencanaanId" name="perencanaan_id" value="{{ form_data.perencanaan_id }}" />
         <textarea id="fieldUraian" name="uraian_pekerjaan" rows="5" class="form-input w-full rounded-2xl border border-navy-200 px-4 py-3 text-sm text-navy-900 hidden" placeholder="Tuliskan uraian pekerjaan Anda di sini...">{{ form_data.uraian_pekerjaan }}</textarea>
         {% if errors.uraian_pekerjaan %}<p class="error-text mt-2">{{ errors.uraian_pekerjaan }}</p>{% endif %}
       </div>
@@ -198,6 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleModeText.textContent = 'Pilih dari Perencanaan';
     pencilIcon.classList.add('hidden');
     listIcon.classList.remove('hidden');
+    document.getElementById('selectedPerencanaanId').value = '';
   }
 
   function switchToDropdown() {
@@ -214,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const program = item.getAttribute('data-program');
     const kategori = item.getAttribute('data-kategori');
     const waktu = item.getAttribute('data-waktu');
+    const perencanaanId = item.getAttribute('data-id');
     
     selectedPlaceholder.innerHTML = `
       <div class="flex flex-col">
@@ -226,10 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     selectedPlaceholder.classList.remove('text-navy-400');
     fieldUraian.value = val;
-    
-    // Highlight active item
-    dropdownItems.forEach(i => i.classList.remove('bg-navy-50'));
-    item.classList.add('bg-navy-50');
+    document.getElementById('selectedPerencanaanId').value = perencanaanId;
   }
 
   // Toggle dropdown visibility

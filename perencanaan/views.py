@@ -224,6 +224,7 @@ def _parse_filters(request):
         "start_date": request.GET.get("start_date", "").strip(),
         "end_date": request.GET.get("end_date", "").strip(),
         "jurusan": request.GET.get("jurusan", "").strip() or "semua",
+        "completed": request.GET.get("completed", "").strip() or "semua",
         "order": request.GET.get("order", "desc").strip(),
     }
 
@@ -237,6 +238,7 @@ def perencanaan_list(request):
         start_date=filters["start_date"],
         end_date=filters["end_date"],
         jurusan=filters["jurusan"],
+        completed=filters["completed"],
         order=filters["order"]
     )
 
